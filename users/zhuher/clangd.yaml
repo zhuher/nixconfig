@@ -1,0 +1,33 @@
+CompileFlags:
+  Add: [ -std=c11, -Wall, -Wextra, -Werror, -Wpedantic, -Wconversion, -pedantic-errors, -Wno-unused-parameter,  -isystem/nix/store/ll0dip5r2rvwdzmfmx4afi08ladl3dbb-subunit-1.4.2/include, -isystem/nix/store/1sgajx2r3bkriyxzwsahhva63p08pmac-python3-3.12.4/include, -isystem/nix/store/hys0724ckmb7xgkfim3sf80xh65b0k1a-lldb-16.0.6-dev/include, -isystem/nix/store/3ijyibv6p09wrsmx2zxrsva4bmm91nfy-check-0.15.2/include, -iframework/nix/store/rvh2gnpz3jw2gb5j945l2jn8b9ma6i0f-apple-framework-CoreGraphics-11.0.0/Library/Frameworks, -iframework/nix/store/8dphxn1ayqxmd4kdrzsk3i1z18q8j41k-apple-framework-CoreFoundation-11.0.0/Library/Frameworks, -isystem/nix/store/1qxv5lvyha8ygdhr5bn0hxmm68bnnp8r-libobjc-11.0.0/include, -iframework/nix/store/rhbd53iilv2kjfkxihrqh1yf1r4q5m7y-apple-framework-IOKit-11.0.0/Library/Frameworks, -iframework/nix/store/sl53adg1l5l1hl29c4ph9lbmr56nng4h-apple-framework-SystemConfiguration-11.0.0/Library/Frameworks, -iframework/nix/store/69gs5xqvq1jyr5871mq0wi5i7fish4fr-apple-framework-Security-11.0.0/Library/Frameworks, -isystem/nix/store/q2rir7qz4cav2czkyrn76pcl1lsha6wf-apple-lib-libDER/include, -isystem/nix/store/1d19w4dqhfq66h1h4xpzdqs8fgsld61s-libcxx-16.0.6-dev/include, -isystem/nix/store/q5slklq70a04q02mx33ch9958xpdcvz3-compiler-rt-libc-16.0.6-dev/include, -iframework/nix/store/hfnsr0jxvygasydamz696qdq5xckpsb8-apple-framework-CoreFoundation-11.0.0/Library/Frameworks, -isystem/nix/store/02bcpkzc6c5p0spkqvm1fs06qziy0m1j-gcc-13.3.0/lib/gcc/aarch64-apple-darwin/13.3.0/include, -isystem/nix/store/02bcpkzc6c5p0spkqvm1fs06qziy0m1j-gcc-13.3.0/include, -isystem/nix/store/02bcpkzc6c5p0spkqvm1fs06qziy0m1j-gcc-13.3.0/lib/gcc/aarch64-apple-darwin/13.3.0/include-fixed, -isystem/nix/store/969fmv0kgwcphwl2bnx0hj85rpb9zwjm-libSystem-11.0.0/include ]
+  Compiler: gcc
+Diagnostics:
+  ClangTidy:
+    Add: [ bugprone-*, modernize-*, performance-*, readability-*, misc-* ]
+    Remove: [ readability-identifier-length, readability-magic-numbers ]
+    FastCheckFilter: None
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+Completion:
+  AllScopes: Yes
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+  BlockEnd: Yes # Since clang-17
+  TypeNameLimit: 0 # Ditto
+Hover:
+  ShowAKA: Yes
+---
+# Flags for .h files
+If:
+  PathMatch: .*\.h
+CompileFlags:
+  Add: [ -xc-header ]
+# Flags for .c files
+---
+If:
+  PathMatch: .*\.c
+CompileFlags:
+  Add: [ -xc ]

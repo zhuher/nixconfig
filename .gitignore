@@ -1,0 +1,7 @@
+.DS_Store
+# nix build result
+result
+result-*
+# direnv-related
+.direnv
+.envrc

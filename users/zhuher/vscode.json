@@ -1,0 +1,108 @@
+{
+  "workbench.iconTheme": "catppuccin-perfect-latte",
+  "workbench.colorTheme": "Catppuccin Macchiato",
+  "markdownlint.config": {
+    "default": true,
+    "MD033": false
+  },
+  "markdown-preview-enhanced.previewTheme": "atom-material.css",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": "true",
+    "scminput": false
+  },
+  "workbench.productIconTheme": "macos-modern",
+  "clang-format.fallbackStyle": "Google",
+  "clang-format.language.c.style": "Google",
+  "clang-format.language.c.fallbackStyle": "Google",
+  "clang-format.language.cpp.enable": false,
+  "clang-format.language.apex.enable": false,
+  "clang-format.language.cuda.enable": false,
+  "clang-format.language.glsl.enable": false,
+  "clang-format.language.java.enable": false,
+  "clang-format.language.javascript.enable": false,
+  "clang-format.language.objective-c.enable": false,
+  "clang-format.language.objective-cpp.enable": false,
+  "clang-format.language.proto.enable": false,
+  "clang-format.language.typescript.enable": false,
+  "[c]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "editor.formatOnSave": true,
+  "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.default.intelliSenseMode": "macos-gcc-arm64",
+  "C_Cpp.errorSquiggles": "enabled",
+  "C_Cpp.inlayHints.parameterNames.enabled": true,
+  "C_Cpp.inlayHints.referenceOperator.enabled": true,
+  "C_Cpp.intelliSenseUpdateDelay": 500,
+  "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+    "clang-analyzer-cplusplus.*"
+  ],
+  "C_Cpp.codeAnalysis.clangTidy.checks.enabled": [
+    "clang-analyzer-*",
+    "bugprone-*",
+    "misc-*"
+  ],
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "editor.accessibilitySupport": "off",
+  "editor.screenReaderAnnounceInlineSuggestion": false,
+  "accessibility.dimUnfocused.enabled": true,
+  "clang-format.executable": "clang-format",
+  "C_Cpp.default.compilerPath": "gcc",
+  "C_Cpp.clang_format_path": "clang-format",
+  "C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",
+  "editor.lineNumbers": "relative",
+  "search.showLineNumbers": true,
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nil",
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.check.extraArgs": [
+    "--",
+    "-Wclippy::pedantic",
+    "-Wclippy::perf",
+    "-Wclippy::all",
+    "-Dclippy::correctness",
+    "-Wclippy::suspicious",
+    "-Wclippy::complexity",
+    "-Wclippy::style",
+    ""
+  ],
+  "extensions.autoCheckUpdates": false,
+  "update.mode": "manual",
+  "rust-analyzer.check.invocationStrategy": "once",
+  "direnv.restart.automatic": true,
+  "editor.minimap.renderCharacters": false,
+  "editor.wordWrap": "bounded",
+  "editor.wrappingIndent": "deepIndent",
+  "editor.wordWrapColumn": 160,
+  "prettier.documentSelectors": ["*.ts"],
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.fontFamily": "Maple Mono NF",
+  "editor.fontLigatures": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "js/ts.implicitProjectConfig.checkJs": true,
+  "javascript.format.semicolons": "insert",
+  "javascript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  "javascript.inlayHints.parameterTypes.enabled": true,
+  "javascript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "javascript.inlayHints.variableTypes.enabled": true,
+  "nix.serverSettings": {
+    "nil": {
+      "formatting": {
+        "command": ["nixfmt"]
+      }
+    }
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "sway-lsp.inlayHints.maxLength": 250,
+  "sway-lsp.logging.level": "info",
+  "update.showReleaseNotes": false
+}

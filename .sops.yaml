@@ -1,0 +1,11 @@
+keys:
+- &users:
+    - &zhuher age1e8qmakcms693egjptg3dz57ttrl9pnpuhyympm8mqhrjwazxyy2q9n3ga0
+- &hosts: # nix-shell -p ssh-to-age --run 'cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age'
+    - &zhukbook age16hsra2naaupytlhtr23z58cysgkt00wgcdsxz9av879ysxruw38qutcffa
+creation_rules:
+- path_regex: users/zhuher/secrets.yaml$
+  key_groups:
+  - age:
+    - *zhuher
+    - *zhukbook

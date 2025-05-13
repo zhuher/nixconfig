@@ -1,0 +1,56 @@
+[colors]
+"commit_id prefix".bold = true
+
+[revsets]
+log = "@ | ancestors(immutable_heads()..) | trunk()"
+
+[template-aliases]
+"format_short_id(id)" = "id.shortest()"
+'format_timestamp(timestamp)' = 'timestamp ++ "(" ++ timestamp.ago() ++ ")"'
+
+[ui]
+default_command = ["log", "--no-pager", "--limit=6"]
+diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+pager = "delta"
+
+[signing]
+behavior = "own"
+backend = "gpg"
+
+[ui.diff]
+tool = [ "delta", "$left", "$right" ]
+# format = "git"
+formt = "summary"
+
+[user]
+email = "societyofbruh@gmail.com"
+name = "Herman Zhukov"
+
+[templates]
+log_node = '''
+coalesce(
+  if(!self, "🮀"),
+  if(current_working_copy, "@"),
+  if(root, "┴"),
+  if(immutable, "●", "○"),
+)
+'''
+op_log_node = 'if(current_operation, "@", "○")'
+[snapshot]
+max-new-file-size = 16777216
+[aliases]
+# my-script = ["util", "exec", "--", "my-jj-script"]
+# #                            ^^^^
+# This makes sure that flags are passed to your script instead of parsed by jj.
+my-inline-script = ["util", "exec", "--", "bash", "-c", """
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Look Ma, everything in one file!"
+echo "args: $@"
+""", ""]
+#    ^^
+# This last empty string will become "$0" in bash, so your actual arguments
+# are all included in "$@" and start at "$1" as expected.
+yolo = [ "util", "exec", "--", "bash", "-c", """
+jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
+""", ""]

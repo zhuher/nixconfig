@@ -1,0 +1,26 @@
+theme = "base16_default"
+[editor]
+bufferline = "multiple"
+color-modes = true
+cursorcolumn = true
+cursorline = true
+line-number = "relative"
+rulers = [80, 120, 160]
+shell = ["zsh", "-c"]
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.lsp]
+display-messages = true
+
+[keys.normal]
+esc = ["collapse_selection", "keep_primary_selection"]
+
+[keys.normal.space]
+q = ":q"
+space = "file_picker"
+w = ":w"
+x = ":x"

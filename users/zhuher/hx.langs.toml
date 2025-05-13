@@ -1,0 +1,96 @@
+[[language]]
+auto-format = true
+language-servers = ["rust-analyzer"]
+name = "rust"
+
+[[language]]
+auto-format = true
+language-servers = ["nil"]
+name = "nix"
+
+[[language]]
+auto-format = true
+language-servers = ["ts-lsp"]
+name = "typescript"
+
+[[language]]
+auto-format = true
+language-servers = ["ts-lsp"]
+name = "javascript"
+
+[language-server.ts-lsp]
+command = "/etc/profiles/per-user/zhuher/bin/typescript-language-server"
+args = [ "--stdio" ]
+
+[language-server.clangd]
+command = "clangd"
+args = ["--enable-config"]
+
+[[language]]
+name = "c"
+language-servers = ["clangd"]
+
+[language-server.rust-analyzer.config]
+checkOnSave = true
+show.enumVariants = 5
+show.fields = 5
+show.traitAssocItems = 3
+lens.enable = true
+
+[language-server.rust-analyzer.config.inlayHints]
+bindingModeHints.enable = true
+chainingHints.enable = true
+closingBraceHints.enable = true
+closingBraceHints.minLines = true
+closureCaptureHints.enable = true
+closureReturnTypeHints.enable = true
+discriminantHints.enable = true
+expressionAdjustmentHints.enable = true
+genericParameterHints.const.enable = true
+genericParameterHints.lifetime.enable = true
+genericParameterHints.type.enable = true
+implicitDrops.enable = true
+lifetimeElisionHints.enable = "skip-trivial"
+lifetimeElisionHints.useParameterNames = true
+parameterHints.enable = true
+rangeExclusiveHints.enable = true
+reborrowHints.enable = "skip-trivial"
+renderColons = true
+
+[language-server.rust-analyzer.config.cargo]
+allTargets = true
+allFeatures = true
+autoreload = true
+buildScripts = { enable = true, rebuildOnSave = true, useRustcWrapper = true }
+
+[language-server.rust-analyzer.config.check]
+command = "clippy"
+extraArgs = [
+  "--",
+  "-Wclippy::all",
+  "-Wclippy::pedantic",
+  "-Dclippy::correctness",
+  "-Wclippy::suspicious",
+  "-Wclippy::complexity",
+  "-Wclippy::perf",
+  "-Wclippy::style",
+  # "-Wclippy::cargo"
+]
+
+[language-server.rust-analyzer.config.hover.actions]
+enable = true
+gotoTypeDef.enable = true
+implementations.enable = true
+references.enable = true
+run.enable = true
+documentation.enable = true
+documentation.keywords.enable = true
+links.enable = true
+
+[language-server.rust-analyzer.config.hover.memoryLayout]
+alignment = "decimal"
+enable = true
+niches = true
+offset = "decimal"
+size = "both"
+
