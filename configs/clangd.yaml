@@ -1,0 +1,33 @@
+CompileFlags:
+  Add: [ -std=c++17, -Wall, -Wextra, -Werror, -Wpedantic, -Wconversion, -pedantic-errors ]
+  Compiler: gcc
+Diagnostics:
+  ClangTidy:
+    Add: [ bugprone-*, modernize-*, performance-*, readability-*, misc-* ]
+    Remove: [ readability-magic-numbers ]
+    FastCheckFilter: None
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+Completion:
+  AllScopes: Yes
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+  BlockEnd: Yes # Since clang-17
+  TypeNameLimit: 0 # Ditto
+Hover:
+  ShowAKA: Yes
+---
+# Flags for .h files
+If:
+  PathMatch: .*\.h
+CompileFlags:
+  Add: [ -xc-header ]
+# Flags for .c files
+---
+If:
+  PathMatch: .*\.c
+CompileFlags:
+  Add: [ -xc ]

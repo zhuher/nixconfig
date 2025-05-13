@@ -1,0 +1,23 @@
+#compdef awg-quick
+# heavily inspired by https://github.com/zsh-users/zsh-completions/blob/c4587d5cf785cd5351854b77f49c2f23a238d87c/src/_wg-quick
+function _awg-quick() {
+  local -a state
+  local ops=(
+    'up:bring an interface up'
+    'down:tear down and remove an interface'
+    )
+  typeset -hA strats=(
+    ['up']='/usr/local/etc/amnezia/amneziawg -g "*.conf'
+    ['down']='/var/run/amneziawg -g "*.name'
+    )
+  _arguments\
+  '1: :->op'\
+  '2: :->inf'
+  case $state in
+    (op) _arguments '1:operation:((${ops}))'
+    ;;
+    (inf) _arguments "2:interface:_path_files -W ${strats[${words[2]}]}(^/:r)\""
+    ;;
+  esac
+}
+_awg-quick "$@"
