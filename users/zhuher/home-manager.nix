@@ -92,6 +92,7 @@ in
       (lib.mkIf isDarwin (
         with pkgs;
         [
+          librewolf
           dockutil
           ffmpeg
           # mas # installed through homebrew as that version is used for App Store apps anyways
@@ -187,7 +188,6 @@ in
       // lib.optionalAttrs isDarwin {
         "Library/Application Support/Code/User/settings.json".source = symlink "${hf}/vscode.json";
         "Library/Preferences/clangd/config.yaml".source = symlink "${hf}/clangd.yaml";
-        "Library/Application Support/jj/config.toml".source = symlink "${hf}/jj.toml";
       }
     # darwin }}}
     ;
@@ -209,6 +209,7 @@ in
       "git/ignore".text = ''.DS_Store'';
       "qBittorrent/qBittorrent.ini".source = symlink "${hf}/qbittorrent.ini";
       "zsh/.p10k.zsh".source = symlink "${hf}/zsh/p10k.zsh";
+      "jj/config.toml".source = symlink "${hf}/jj.toml";
       # "emacs/early-init.el".source = symlink "${hf}/early-zhukmacs.el";
       # "emacs/init.el".source = symlink "${hf}/zhukmacs.el";
       # "emacs/zhukmacs.org".source = symlink "${hf}/zhukmacs.org";
@@ -227,12 +228,12 @@ in
   # #HOME/.config }}}
   # programs {{{
   programs = {
-    # firefox {{{
-    firefox = {
-      enable = !isWSL;
-      # package = pkgs.librewolf;
-    };
-    # firefox }}}
+    # # firefox {{{ # error: attribute 'override' missing <- wtf?
+    # firefox = {
+    #   enable = !isWSL;
+    #   package = pkgs.librewolf;
+    # };
+    # # firefox }}}
     # helix {{{
     helix = {
       enable = true;

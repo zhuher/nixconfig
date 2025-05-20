@@ -154,8 +154,12 @@
       owner = currentSystemUser;
       mode = "0400";
     };
-    secrets.wg-large-eagle = {
-      path = "/etc/wireguard/large-eagle.conf";
+    secrets.wg-large-eagle-2 = {
+      path = "/etc/wireguard/large-eagle-2.conf";
+      mode = "0400";
+    };
+    secrets.wg-large-eagle-1 = {
+      path = "/etc/wireguard/large-eagle-1.conf";
       mode = "0400";
     };
     secrets.contact-info.mode = "0400";
