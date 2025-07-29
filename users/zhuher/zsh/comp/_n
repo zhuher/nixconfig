@@ -1,0 +1,7 @@
+#compdef n
+function _n() {
+  pushd $NH_FLAKE >/dev/null 2>/dev/null
+  _just "$@"
+  popd >/dev/null 2>/dev/null
+}
+_n "$@"

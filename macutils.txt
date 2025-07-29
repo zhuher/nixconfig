@@ -1,0 +1,6 @@
+cd ~/Downloads
+curl -O https://cdn.teleport.dev/Teleport%20Connect-16.1.1.dmg
+hdiutil attach ~/Downloads/Teleport\ Connect-16.1.1.dmg
+installer -pkg /Volumes/Teleport\ Connect-16.1.1/teleport-connect.pkg -target /
+hdiutil detach /Volumes/Teleport\ Connect-16.1.1
+rm ~/Downloads/Teleport\ Connect-16.1.1.dmg

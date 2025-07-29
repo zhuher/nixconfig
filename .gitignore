@@ -4,4 +4,3 @@ result
 result-*
 # direnv-related
 .direnv
-.envrc
