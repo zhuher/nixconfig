@@ -1,20 +1,15 @@
 # NIXPORT := env('NIXPORT', "22")
-NIXUSER := env('NIXUSER', "zhuher")
+NIXUSER := env('NIXUSER', shell("whoami"))
 CONFIG_DIR := justfile_directory()
 UNAME := `uname -a`
-HOST := env('NIXHOST', if UNAME =~ ".*Darwin.*" {
-             if shell("sysctl -na machdep.cpu.brand_string") =~ ".*M1.*" { "gandalf" }
-             else { error("Unsupported Darwin!") }
-         } else {
-             if UNAME =~ "(?i).*wsl.*" { "wsl" }
-             else { error("Unsupported system type!") }
-         })
+HOST := env('NIXHOST', shell("hostname"))
 SYS := if UNAME =~ ".*Darwin.*" { "darwin" } else { "os" }
 CONFIG := if UNAME =~ ".*Darwin.*" { "darwin" } else { "nixos" }
 # shows this message
 info:
     @echo "nh command       : {{SYS}}"
     @echo "uname            : {{UNAME}}"
+    @echo "host             : {{HOST}}"
     @echo "config directory : {{CONFIG_DIR}}"
     @echo "user             : {{NIXUSER}}"
     just --list

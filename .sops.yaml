@@ -1,11 +1,27 @@
 keys:
-- &users: # echo $AGE_SSH_PK | ssh-to-age -private-key >> ~/.config/sops/age/keys.txt
-    - &zhuher age1e8qmakcms693egjptg3dz57ttrl9pnpuhyympm8mqhrjwazxyy2q9n3ga0
-- &hosts: # nix-shell -p ssh-to-age --run 'ssh-keyscan -t ed25519 localhost | ssh-to-age'
-    - &zhukbook age1erm4dclf6x0kj58vc5mgtycdqd7xqv32clk6j2har20q97zzk9as57ple8
+  # echo $AGE_SSH_PK | ssh-to-age -private-key >> ~/.config/sops/age/keys.txt
+  - &zhuher age1e8qmakcms693egjptg3dz57ttrl9pnpuhyympm8mqhrjwazxyy2q9n3ga0
+  # nix-shell -p ssh-to-age --run 'ssh-keyscan -t ed25519 localhost | ssh-to-age'
+  - &gandalf age1erm4dclf6x0kj58vc5mgtycdqd7xqv32clk6j2har20q97zzk9as57ple8
+  - &workbook age17vpmm4l0ktf8868vzjs8pwckav02arrw4j6ld8rl2nt69aqtta4s3rq9lg
 creation_rules:
 - path_regex: .*[/.]secrets?[/.].*
   key_groups:
   - age:
     - *zhuher
-    - *zhukbook
+- path_regex: darwin.yaml
+  key_groups:
+  - age:
+    - *zhuher
+    - *gandalf
+    - *workbook
+- path_regex: gandalf.yaml
+  key_groups:
+  - age:
+    - *zhuher
+    - *gandalf
+- path_regex: ws.yaml
+  key_groups:
+  - age:
+    - *zhuher
+    - *workbook
