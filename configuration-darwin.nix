@@ -133,27 +133,6 @@
   # dock {{{
   local.dock = {
     enable = true;
-    entries = [
-      {path = "/Applications/Safari.app";}
-      {
-        path = "${
-          # pkgs.moonlight-qt
-          ""
-        }/Applications/Moonlight.app";
-      }
-      {path = "/Applications/Telegram.app";}
-      {path = "/Applications/Nix Apps/Ghostty.app";}
-      {
-        path = "/Applications";
-        section = "others";
-        options = "--sort name --view grid --display stack";
-      }
-      {
-        path = "/Users/${currentSystemUser}/Downloads";
-        section = "others";
-        options = "--sort dateadded --view grid --display folder";
-      }
-    ];
   };
   # dock }}}
   # brew & app store {{{
@@ -170,14 +149,14 @@
     ];
     brews = [
       "mas"
-      "virtualenv"
+      # "virtualenv"
     ];
 
     casks = [
       "orion"
       "qlmarkdown"
       "syntax-highlight"
-      "moonlight"
+      # "moonlight"
       "keka"
       # "parsec" # VPN
       # "tor-browser" VPN
@@ -194,12 +173,12 @@
       "Velja" = 1607635845;
       # "GarageBand" = 682658836;
       # "Warframe" = 1520001008; # only mobile devices (why???)
-      "Pages" = 409201541;
-      "Numbers" = 409203825;
+      # "Pages" = 409201541;
+      # "Numbers" = 409203825;
       # "DaisyDisk" = 411643860; # using a version from their website as it's more powerful
       "StrongBox" = 1481853033;
       # "Customize Search Engine" = 6445840140; # [TODO]: Return to this maybe
-      "Telegram" = 747648890;
+      # "Telegram" = 747648890;
       # "Xcode" = 497799835;
     };
   }; # brew & app store }}}
@@ -366,7 +345,12 @@
       postActivation.text = let
         link-apps = pkgs.writeText "link-apps" ''
           setopt nullglob
-          for app in {{/Applications/Nix\ Apps/,/Volumes/t7-shield/SteamLibrary/steamapps/common/},${env.HOME}/{Library/Application\ Support/Steam/steamapps/common/*/,Documents/Games/**/,Applications/Crossover/**/}}*.app
+          # /Applications/Nix\ Apps/,
+          for app in {\
+          /Volumes/t7-shield/SteamLibrary/steamapps/common/,\
+          ${env.HOME}/Library/Application\ Support/Steam/steamapps/common/*/,\
+          ${env.HOME}/Documents/Games/**/,\
+          ${env.HOME}/Applications/Crossover/**/}*.app
           do
             ${rm} "/Applications/''${''${app:t}%.*}"
             ${getExe mkalias} "$(${realpath} "$app")" "/Applications/''${''${app:t}%.*}"

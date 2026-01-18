@@ -31,7 +31,6 @@
           # git {{{
           "git/ignore".text = ''
             .DS_Store
-            .devenv
           '';
           "git/config".source = (pkgs.formats.toml {}).generate "gitconfig" {
             alias = {
@@ -134,6 +133,7 @@
                   IdentityFile ${env.HOME}/.ssh/gh.pub
                   IdentityFile ${env.HOME}/.ssh/pers.pub
                   IdentityFile ${env.HOME}/.ssh/misc.pub
+                  IdentityFile ${env.HOME}/.ssh/work.pub
                 Include ${env.HOME}/.ssh/hosts
                 Include ${env.HOME}/.ssh/mutable-config'';
             # "${lwHome}/Profiles/lirililarilla/chrome" = {

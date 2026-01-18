@@ -862,7 +862,7 @@ local plugins = {
     build = ":TSUpdate",
     ft = ts_langs,
     config = function()
-      local configs = require("nvim-treesitter.configs")
+      local configs = require("nvim-treesitter")
       configs.setup({
         ensure_installed = ts_langs,
         sync_install = false,
