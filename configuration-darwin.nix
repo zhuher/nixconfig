@@ -149,17 +149,13 @@
     ];
     brews = [
       "mas"
-      # "virtualenv"
     ];
 
     casks = [
       "orion"
       "qlmarkdown"
       "syntax-highlight"
-      # "moonlight"
       "keka"
-      # "parsec" # VPN
-      # "tor-browser" VPN
     ];
 
     # These app IDs are from using the mas CLI app
@@ -171,15 +167,7 @@
     # ```
     masApps = {
       "Velja" = 1607635845;
-      # "GarageBand" = 682658836;
-      # "Warframe" = 1520001008; # only mobile devices (why???)
-      # "Pages" = 409201541;
-      # "Numbers" = 409203825;
-      # "DaisyDisk" = 411643860; # using a version from their website as it's more powerful
       "StrongBox" = 1481853033;
-      # "Customize Search Engine" = 6445840140; # [TODO]: Return to this maybe
-      # "Telegram" = 747648890;
-      # "Xcode" = 497799835;
     };
   }; # brew & app store }}}
   system = {

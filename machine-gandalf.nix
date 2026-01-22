@@ -5,6 +5,26 @@
   currentSystemUser,
   ...
 }: {
+  homebrew = {
+    brews = [
+      "virtualenv"
+    ];
+    casks = [
+      "moonlight"
+      # "parsec" # VPN
+      # "tor-browser" VPN
+    ];
+    masApps = {
+      # "GarageBand" = 682658836;
+      # "Warframe" = 1520001008; # only mobile devices (why???)
+      "Pages" = 409201541;
+      "Numbers" = 409203825;
+      # "DaisyDisk" = 411643860; # using a version from their website as it's more powerful
+      # "Customize Search Engine" = 6445840140; # [TODO]: Return to this maybe
+      "Telegram" = 747648890;
+      # "Xcode" = 497799835;
+    };
+  };
   networking = {
     applicationFirewall.enableStealthMode = true;
     dns = [
@@ -70,10 +90,10 @@
     };
   };
   environment.systemPackages = with pkgs; [
-      zls
-      zig
-      nodejs-slim
-      gh
+    zls
+    zig
+    nodejs-slim
+    gh
     ffmpeg
     # cataclysm-dda-git
     crawl
@@ -89,6 +109,23 @@
     libjxl
     ice-bar # [ERROR] Crashes when using the floating ice bar.
     appcleaner
+  ];
+  local.dock.entries = [
+    {path = "/Applications/Safari.app";}
+    {path = "/Applications/Moonlight.app";}
+    {path = "/Applications/Telergam.app";}
+    {path = "/Applications/Nix Apps/Ghostty.app";}
+    {path = "/Applications/Mail.app";}
+    {
+      path = "/Applications";
+      section = "others";
+      options = "--sort name --view grid --display stack";
+    }
+    {
+      path = "/Users/${currentSystemUser}/Downloads";
+      section = "others";
+      options = "--sort dateadded --view grid --display folder";
+    }
   ];
   launchd.user.agents.zhukmacs.serviceConfig = let
     zsh = lib.getExe pkgs.zsh;

@@ -7,7 +7,9 @@
   environment.systemPackages = with pkgs; [
     # dbeaver-bin
   ];
-  homebrew.casks = ["dbeaver-community"];
+homebrew = {
+  casks = ["dbeaver-community"];
+};
   programs.xstarbound.enable = lib.mkForce false;
   security.pki.certificateFiles = [
     ./ca_cert.pem # https://tbawor.sh/posts/nix-on-macos/#step-1-export-trusted-certificates-from-macos-keychain
