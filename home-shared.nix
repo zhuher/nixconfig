@@ -4,6 +4,7 @@
   isDarwin,
   inputs,
   currentSystemUser,
+  currentSystemName,
   ...
 } @ outer: {
   home-manager = let
@@ -102,14 +103,16 @@
         home = {
           stateVersion = "25.11";
           file = {
+            # {{{
             ".bashrc".text = ''
               if [ -n "$GHOSTTY_RESOURCES_DIR" ]; then
                 builtin source "''${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
               fi
-            '';
+            ''; # }}}
             "LAPS".source = mkLk "${env.HOME}/Library/Application Support";
             "Library/Application Support/com.mitchellh.ghostty/config".source = mkLk "${env.NH_FLAKE}/ghostty";
             ".ssh/config".text =
+              # {{{
               lib.optionalString
               isDarwin ''
                 Host *
@@ -135,7 +138,7 @@
                   IdentityFile ${env.HOME}/.ssh/misc.pub
                   IdentityFile ${env.HOME}/.ssh/work.pub
                 Include ${env.HOME}/.ssh/hosts
-                Include ${env.HOME}/.ssh/mutable-config'';
+                Include ${env.HOME}/.ssh/mutable-config''; # }}}
             # "${lwHome}/Profiles/lirililarilla/chrome" = {
             #   source = "${inputs.gwfox}/chrome";
             #   recursive = true;
@@ -381,6 +384,7 @@
     useUserPackages = true;
     users.${currentSystemUser} = home;
     sharedModules = [
+      ./home-${currentSystemName}.nix
       inputs.nix-index-database.homeModules.nix-index
     ];
   };

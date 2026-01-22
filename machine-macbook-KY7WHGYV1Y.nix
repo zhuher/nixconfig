@@ -1,8 +1,13 @@
 {
   lib,
+  pkgs,
   currentSystemUser,
   ...
 }: {
+  environment.systemPackages = with pkgs; [
+    # dbeaver-bin
+  ];
+  homebrew.casks = ["dbeaver-community"];
   programs.xstarbound.enable = lib.mkForce false;
   security.pki.certificateFiles = [
     ./ca_cert.pem # https://tbawor.sh/posts/nix-on-macos/#step-1-export-trusted-certificates-from-macos-keychain
@@ -15,7 +20,7 @@
     {path = "/Applications/Nix Apps/Ghostty.app";}
     {path = "/Applications/Толк.app";}
     {path = "/Applications/Time.app";}
-    {path = "/Applications/Microsoft Outlook.app";}
+    # {path = "/Applications/Microsoft Outlook.app";}
     {path = "/Applications/Cisco/Cisco Secure Client.app";}
     {
       path = "/Applications";

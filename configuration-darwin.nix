@@ -138,7 +138,7 @@
   # brew & app store {{{
   homebrew = {
     taps = builtins.attrNames config.nix-homebrew.taps;
-    enable =  true;
+    enable = true;
     onActivation = {
       cleanup = "zap";
       autoUpdate = true;
@@ -380,6 +380,7 @@
     home = "/Users/${currentSystemUser}";
   };
   environment.systemPackages = with pkgs; [
+    monitorcontrol
     localsend
     anki-bin
     apparency # [ERROR]: QuickLook extension does not work when installed via nix.

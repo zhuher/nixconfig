@@ -133,7 +133,6 @@
           }.nix
           ./machine-${name}.nix
           ./user-${user}.nix
-          ./home-${name}.nix
           # sops-nix {{{
           inputs.sops-nix."${
             if isDarwin

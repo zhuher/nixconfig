@@ -98,6 +98,8 @@ vim.diagnostic.config(diag_opts)
 vim.api.nvim_set_hl(0, "CursorColumn", { reverse = true })
 vim.api.nvim_set_hl(0, "CursorLineNr", { reverse = true })
 vim.api.nvim_set_hl(0, "CursorLine", { reverse = true })
+vim.api.nvim_set_hl(0, "Comment", { italic = true })
+vim.api.nvim_set_hl(0, "LspInlayHint", { link = "Comment" })
 -- local a
 -- ===
 -- sussex
