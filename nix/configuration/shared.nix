@@ -13,6 +13,11 @@
 in {
   # xSB {{{
   imports = [
+    ./${
+      if isDarwin
+      then "darwin"
+      else "nixos"
+    }.nix
   ];
   programs.xstarbound = {
     enable = true;
@@ -58,7 +63,7 @@ in {
           warn_timeout = "30s";
         };
         whitelist = {
-          exact = ["${config.environment.variables.HOME}/.envrc"];
+          exact = ["${env.HOME}/.envrc"];
         };
       };
     };
@@ -72,25 +77,27 @@ in {
     extraOptions = ''
       !include ${config.sops.secrets.access-tokens.path}
     '';
-    # gc = {
-    #   interval = {
-    #     Weekday = 0;
-    #     Hour = 23;
-    #     Minute = 0;
-    #   };
-    #   automatic = true;
-    # };
-    optimise.interval = {
-      Weekday = 0;
-      Hour = 23;
-      Minute = 0;
+    gc = {
+      #   interval = {
+      #     Weekday = 0;
+      #     Hour = 23;
+      #     Minute = 0;
+      #   };
+      automatic = false;
+    };
+    optimise = {
+      interval = {
+        Weekday = 0;
+        Hour = 23;
+        Minute = 0;
+      };
+      automatic = lib.mkDefault false;
     };
     registry = pkgs.lib.mapAttrs (_: value: {flake = value;}) inputs;
     nixPath = pkgs.lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry;
     enable = false; # because using determinate nix
-    package = pkgs.lix; # use lix instead of cppNix
+    # package = pkgs.lix; # use lix instead of cppNix
     checkConfig = true;
-    optimise.automatic = lib.mkDefault true;
     settings = {
       auto-optimise-store = false;
       cores = 0;
@@ -137,7 +144,6 @@ in {
   programs.zsh = let
     inherit (lib) getExe getExe';
     inherit (pkgs) zoxide fzf steamcmd coreutils;
-    env = config.environment.variables;
   in {
     enable = true;
     enableBashCompletion = true;
@@ -157,11 +163,11 @@ in {
       HELPLDIR="${pkgs.zsh}/share/zsh/$ZSH_VERSION/help"
       path+="${pkgs.zsh-fzf-tab}/share/fzf-tab"
       fpath+="${pkgs.zsh-fzf-tab}/share/fzf-tab"
-      fpath+="${env.NH_FLAKE}/zsh/comp"
+      fpath+="${env.NH_FLAKE}/configs/zsh/comp"
 
       autoload -Uz compinit
       mkdir -p ${env.XDG_CACHE_HOME}/zsh
-      source "${env.NH_FLAKE}/zsh/comp.zsh"
+      source "${env.NH_FLAKE}/configs/zsh/comp.zsh"
 
       if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
         autoload -Uz -- "$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
@@ -187,7 +193,7 @@ in {
       source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 
       setopt nullglob
-      source "${env.NH_FLAKE}/zsh/rc.zsh"
+      source "${env.NH_FLAKE}/configs/zsh/rc.zsh"
 
       HISTSIZE=9999999999
       HISTFILE="${env.ZDOTDIR}/hist"

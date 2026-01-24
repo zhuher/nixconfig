@@ -4,7 +4,9 @@
   config,
   currentSystemUser,
   ...
-}: {
+}: let
+  env = config.environment.variables;
+in {
   homebrew = {
     brews = [
       "virtualenv"
@@ -45,45 +47,47 @@
     alias -- emg='open -a EmacsClient'
     source ${config.sops.secrets.secret-script-1.path}
   '';
-  sops = {
+  sops = let
+    sopsFile = ../../secrets/gandalf.yaml;
+  in {
     secrets = {
       ssh-hosts = {
-        sopsFile = ./gandalf.yaml;
+        inherit sopsFile;
         mode = "0400";
-        path = "/Users/${currentSystemUser}/.ssh/hosts";
+        path = "${env.HOME}/.ssh/hosts";
         owner = currentSystemUser;
       };
       copilot-hosts = {
         path = "/Users/zhuher/.config/github-copilot/hosts.json";
-        sopsFile = ./gandalf.yaml;
+        inherit sopsFile;
         mode = "0400";
         owner = currentSystemUser;
       };
-      ssh-keys-work = {
-        sopsFile = ./gandalf.yaml;
+      "ssh-keys/work" = {
+        inherit sopsFile;
         mode = "0400";
         owner = currentSystemUser;
       };
-      ssh-keys-gh = {
-        sopsFile = ./gandalf.yaml;
-        path = "/Users/${currentSystemUser}/.ssh/gh.pub";
+      "ssh-keys/gh" = {
+        inherit sopsFile;
+        path = "${env.HOME}/.ssh/gh.pub";
         mode = "0400";
         owner = currentSystemUser;
       };
-      ssh-keys-pers = {
-        sopsFile = ./gandalf.yaml;
-        path = "/Users/${currentSystemUser}/.ssh/pers.pub";
+      "ssh-keys/pers" = {
+        inherit sopsFile;
+        path = "${env.HOME}/.ssh/pers.pub";
         mode = "0400";
         owner = currentSystemUser;
       };
-      ssh-keys-misc = {
-        sopsFile = ./gandalf.yaml;
-        path = "/Users/${currentSystemUser}/.ssh/misc.pub";
+      "ssh-keys/misc" = {
+        inherit sopsFile;
+        path = "${env.HOME}/.ssh/misc.pub";
         mode = "0400";
         owner = currentSystemUser;
       };
       secret-script-1 = {
-        sopsFile = ./gandalf.yaml;
+        inherit sopsFile;
         mode = "0400";
         owner = currentSystemUser;
       };
@@ -113,7 +117,7 @@
   local.dock.entries = [
     {path = "/Applications/Safari.app";}
     {path = "/Applications/Moonlight.app";}
-    {path = "/Applications/Telergam.app";}
+    {path = "/Applications/Telegram.app";}
     {path = "/Applications/Nix Apps/Ghostty.app";}
     {path = "/Applications/Mail.app";}
     {
@@ -122,7 +126,7 @@
       options = "--sort name --view grid --display stack";
     }
     {
-      path = "/Users/${currentSystemUser}/Downloads";
+      path = "${env.HOME}/Downloads";
       section = "others";
       options = "--sort dateadded --view grid --display folder";
     }
@@ -137,8 +141,8 @@
     Label = "zhuk.gnu.emacs.daemon";
     ProcessType = "Interactive";
     RunAtLoad = true;
-    StandardOutPath = "/Users/${currentSystemUser}/Library/Logs/Zhukmacs.log";
-    StandardErrorPath = "/Users/${currentSystemUser}/Library/Logs/Zhukmacs-Errors.log";
+    StandardOutPath = "${env.HOME}/Library/Logs/Zhukmacs.log";
+    StandardErrorPath = "${env.HOME}/Library/Logs/Zhukmacs-Errors.log";
     ProgramArguments = [
       "${zsh}"
       "-ilc"

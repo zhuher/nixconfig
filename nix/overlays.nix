@@ -8,7 +8,7 @@ final: _prev: {
       nativeBuildInputs = [makeBinaryWrapper];
       postBuild = ''
         wrapProgram $out/bin/bat --set-default \
-        BAT_CONFIG_PATH ${./bat}
+        BAT_CONFIG_PATH ${../configs/bat}
       '';
     };
   # bat }}}
@@ -22,7 +22,7 @@ final: _prev: {
         wrapProgram $out/bin/tmux \
         --add-flags '-f' \
         --add-flags \
-        ${./tmux.conf}
+        ${../configs/tmux.conf}
       '';
     };
   # tmux }}}
@@ -36,7 +36,7 @@ final: _prev: {
       postBuild = ''
         wrapProgram $out/bin/nvim \
         --add-flags '-u' \
-        --add-flags '${./nvim.lua}'
+        --add-flags '${../configs/nvim.lua}'
       '';
     };
   # nvim }}}

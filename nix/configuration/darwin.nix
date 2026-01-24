@@ -6,7 +6,9 @@
   inputs,
   ...
 }
-: {
+: let
+  env = config.environment.variables;
+in {
   imports = [
     # nix-homebrew {{{
     inputs.nix-homebrew.darwinModules.nix-homebrew
@@ -325,7 +327,6 @@
       inherit (lib) getExe getExe';
       zsh = getExe pkgs.zsh;
       su = "/usr/bin/su";
-      env = config.environment.variables;
       realpath = getExe' coreutils "realpath";
       rm = getExe' coreutils "rm";
     in {
@@ -389,7 +390,7 @@
   security.pam.services.sudo_local.touchIdAuth = true;
   launchd.user.agents.syncthing = {
     environment = {
-      HOME = "/Users/${currentSystemUser}";
+      HOME = "${env.HOME}";
       STNORESTART = "1";
       STNOUPGRADE = "1";
     };
@@ -401,8 +402,8 @@
       ProgramArguments = [
         "${lib.getExe pkgs.syncthing}"
       ];
-      StandardOutPath = "/Users/${currentSystemUser}/Library/Logs/Syncthing.log";
-      StandardErrorPath = "/Users/${currentSystemUser}/Library/Logs/Syncthing-Errors.log";
+      StandardOutPath = "${env.HOME}/Library/Logs/Syncthing.log";
+      StandardErrorPath = "${env.HOME}/Library/Logs/Syncthing-Errors.log";
     };
   };
   users.knownGroups = [config.users.groups.keys.name];
@@ -411,11 +412,11 @@
     members = ["${currentSystemUser}"];
   };
   sops = {
-    defaultSopsFile = ./darwin.yaml;
+    defaultSopsFile = ../../secrets/darwin.yaml;
     defaultSopsFormat = "yaml";
     age.sshKeyPaths = [
-      "/Users/${currentSystemUser}/.ssh/age"
-      "/Users/${currentSystemUser}/.ssh/id_ed25519"
+      "${env.HOME}/.ssh/age"
+      "${env.HOME}/.ssh/id_ed25519"
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {

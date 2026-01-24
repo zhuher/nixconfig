@@ -26,8 +26,8 @@
         xdg.configFile = {
           # {{{
           # emacs {{{
-          "emacs/init.el".source = mkLk "${env.NH_FLAKE}/emacs/init.el";
-          "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/emacs/early-init.el";
+          "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
+          "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
           # emacs }}}
           # git {{{
           "git/ignore".text = ''
@@ -93,7 +93,7 @@
             alias canihazip4 = ${dig} @resolver4.opendns.com myip.opendns.com +short -4
             source "${env.XDG_CONFIG_HOME}/nushell/zoxide.nu"
             alias cd = z
-            source "${env.NH_FLAKE}/nu/mutable.nu"
+            source "${env.NH_FLAKE}/configs/nu/mutable.nu"
             source "${env.XDG_CACHE_HOME}/carapace/init.nu"
             $env.config.hooks.env_change.PWD = (
               $env.config.hooks.env_change.PWD | append (source ${pkgs.nu_scripts}/share/nu_scripts/nu-hooks/nu-hooks/direnv/direnv.nu)
@@ -110,7 +110,7 @@
               fi
             ''; # }}}
             "LAPS".source = mkLk "${env.HOME}/Library/Application Support";
-            "Library/Application Support/com.mitchellh.ghostty/config".source = mkLk "${env.NH_FLAKE}/ghostty";
+            "Library/Application Support/com.mitchellh.ghostty/config".source = mkLk "${env.NH_FLAKE}/configs/ghostty";
             ".ssh/config".text =
               # {{{
               lib.optionalString
@@ -384,7 +384,7 @@
     useUserPackages = true;
     users.${currentSystemUser} = home;
     sharedModules = [
-      ./home-${currentSystemName}.nix
+      ./${currentSystemName}.nix
       inputs.nix-index-database.homeModules.nix-index
     ];
   };

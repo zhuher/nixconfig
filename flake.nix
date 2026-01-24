@@ -92,7 +92,7 @@
       inputs.sops-nix.overlays.default
       inputs.zig-overlay.overlays.default
       # inputs.lix-module.overlays.default
-      (import ./overlays.nix)
+      (import ./nix/overlays.nix)
     ];
     supportedSystems = [
       "x86_64-linux"
@@ -123,16 +123,11 @@
     in
       systemFunc rec {
         inherit system;
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs isDarwin;};
         modules = [
-          ./configuration-shared.nix
-          ./configuration-${
-            if isDarwin
-            then "darwin"
-            else "nixos"
-          }.nix
-          ./machine-${name}.nix
-          ./user-${user}.nix
+          ./nix/configuration/shared.nix
+          ./nix/machine/${name}.nix
+          ./nix/home/shared.nix
           # sops-nix {{{
           inputs.sops-nix."${
             if isDarwin
@@ -142,7 +137,6 @@
           # sops-nix }}}
           # home-manager {{{
           inputs.home-manager.darwinModules.home-manager
-          ./home-shared.nix
           # home-manager }}}
           inputs.xsb.nixosModules.default
           # nix-index-database {{{
@@ -159,22 +153,20 @@
               currentSystemUser = user;
               currentSystemName = name;
               inherit isWSL;
-              inherit isDarwin;
+              # inherit isDarwin;
               inherit inputs;
             };
           }
           # module arguments }}}
           # nixpkgs settings & overlays {{{
-          (
-            _: {
-              nixpkgs = {
-                config.allowUnfree = true;
-                inherit overlays;
-                flake.setFlakeRegistry = false; # set manually along with all other inputs
-                flake.setNixPath = false; # ditto
-              };
-            }
-          )
+          {
+            nixpkgs = {
+              config.allowUnfree = true;
+              inherit overlays;
+              flake.setFlakeRegistry = false; # set manually along with all other inputs
+              flake.setNixPath = false; # ditto
+            };
+          }
           # nixpkgs settings & overlays }}}
           # nixos-wsl {{{
           (

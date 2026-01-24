@@ -1,15 +1,18 @@
 {
   lib,
   pkgs,
+  config,
   currentSystemUser,
   ...
-}: {
+}: let
+  env = config.environment.variables;
+in {
   environment.systemPackages = with pkgs; [
     # dbeaver-bin
   ];
-homebrew = {
-  casks = ["dbeaver-community"];
-};
+  homebrew = {
+    casks = ["dbeaver-community"];
+  };
   programs.xstarbound.enable = lib.mkForce false;
   security.pki.certificateFiles = [
     ./ca_cert.pem # https://tbawor.sh/posts/nix-on-macos/#step-1-export-trusted-certificates-from-macos-keychain
@@ -30,20 +33,22 @@ homebrew = {
       options = "--sort name --view grid --display stack";
     }
     {
-      path = "/Users/${currentSystemUser}/Downloads";
+      path = "${env.HOME}/Downloads";
       section = "others";
       options = "--sort dateadded --view grid --display folder";
     }
   ];
 
-  sops.secrets = {
-    jjsecrets.sopsFile = ./ws.yaml;
-    gitsecrets.sopsFile = ./ws.yaml;
+  sops.secrets = let
+    sopsFile = ../../secrets/ws.yaml;
+  in {
+    jjsecrets.sopsFile = sopsFile;
+    gitsecrets.sopsFile = sopsFile;
     ssh-hosts = {
       mode = "0400";
-      path = "/Users/${currentSystemUser}/.ssh/hosts";
+      path = "${env.HOME}/.ssh/hosts";
       owner = currentSystemUser;
-      sopsFile = ./ws.yaml;
+      inherit sopsFile;
     };
   };
 }

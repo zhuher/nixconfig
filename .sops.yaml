@@ -5,7 +5,7 @@ keys:
   - &gandalf age1erm4dclf6x0kj58vc5mgtycdqd7xqv32clk6j2har20q97zzk9as57ple8
   - &workbook age17vpmm4l0ktf8868vzjs8pwckav02arrw4j6ld8rl2nt69aqtta4s3rq9lg
 creation_rules:
-- path_regex: .*[/.]secrets?[/.].*
+- path_regex: secrets/.*
   key_groups:
   - age:
     - *zhuher
