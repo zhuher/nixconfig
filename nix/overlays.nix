@@ -227,7 +227,7 @@ final: _prev: {
         inherit pname version;
         src = fetchurl {
           url = "https://github.com/ghostty-org/ghostty/releases/download/${version}/Ghostty.dmg";
-          sha256 = "sha256-Cf8FVh3Z9Co8TCFGVRVT5SLQmbZRFnEvAo1XHR2p208=";
+          sha256 = "sha256-nfp+j/cmDcAyqtVnYpmo0uQp5A6lQlvsUXB+r4HukT8=";
         };
 
         outputs = [

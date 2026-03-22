@@ -184,6 +184,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
     --     'Show symbol info in a floating window',
     --     keyopts)
     -- end
+    bufkey('n', '<leader>a', "<cmd>lua vim.cmd.RustLsp('codeAction')<CR>", "Show code actions", keyopts)
+    bufkey('n', 'K', "<cmd>lua vim.cmd.RustLsp({'hover', 'actions'})<CR>", "Show hover actions", keyopts)
     if client.capabilities.textDocument.references then
       bufkey('n', 'gr', vim.lsp.buf.references, 'Find references to the symbol under the cursor', keyopts)
     end
@@ -307,22 +309,32 @@ vim.lsp.config.zls = {  -- {{{
   },
 }
 vim.lsp.enable('zls')            -- }}}
-vim.lsp.config.rust_analyzer = { -- {{{
-  capabilities = {
-    experimental = { serverStatusNotification = true },
-  },
-  cmd = { 'rust-analyzer' },
-  filetypes = { 'rust' },
-  single_file_support = true,
-  settings = {
-    ['rust-analyzer'] = {
-      check = {
-        command = "clippy",
-      },
-    },
-  }
-}
-vim.lsp.enable('rust_analyzer') -- }}}
+-- vim.lsp.config.rust_analyzer = { -- {{{
+--   capabilities = {
+--     experimental = { serverStatusNotification = true },
+--   },
+--   commands = {
+--     ExpandMacro = {
+--       function()
+--         vim.lsp.buf_request_all(0,
+--         "rust-analyzer/expandMacro",
+--         vim.lsp.util.make_position_params(),
+--         vim.print)
+--       end
+--     },
+--   },
+--   cmd = { 'rust-analyzer' },
+--   filetypes = { 'rust' },
+--   single_file_support = true,
+--   settings = {
+--     ['rust-analyzer'] = {
+--       check = {
+--         command = "clippy",
+--       },
+--     },
+--   }
+-- }
+-- vim.lsp.enable('rust_analyzer') -- }}}
 vim.lsp.config.bashls = {       -- {{{
   cmd = { 'bash-language-server', 'start' },
   filetypes = { 'bash', 'sh', 'zsh', 'command' },
@@ -352,7 +364,7 @@ end
 -- neovide-specific }}}
 local ts_langs = { "regex", "rust", "zig", "go", "nix", "c", "lua", "vim", "vimdoc", "javascript", "typescript", "html",
   "julia",
-  "css", "markdown" }
+  "css", "markdown", "nushell" }
 local function checkExts()
   local uis = vim.api.nvim_list_uis()
   local ok = true
@@ -371,6 +383,31 @@ local function extraPlugFunc()
 end
 local doWhistles = extraPlugFunc()
 local plugins = {
+  -- neotest {{{
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter"
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("rustaceanvim.neotest"),
+        },
+      })
+    end
+  },
+  -- neotest }}}
+  -- rustaceanvim {{{
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^8', -- Recommended
+    lazy = false, -- This plugin is already lazy
+  },
+  -- rustaceanvim }}}
   -- vcsigns.nvim {{{
   {
     'algmyr/vcsigns.nvim',

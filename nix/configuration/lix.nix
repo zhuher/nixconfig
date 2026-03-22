@@ -5,8 +5,8 @@
       #   nix = final.lixPackageSets.stable.lix;
       # }; # Adapt to your specific use case.
       inherit
-        (final.lixPackageSets.stable)
-        nix-diren
+        (prev.lixPackageSets.stable)
+        nixpkgs-review
         nix-eval-jobs
         nix-fast-build
         ;

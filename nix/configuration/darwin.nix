@@ -373,6 +373,7 @@ in {
   };
   environment.systemPackages = with pkgs; [
     # zhuk.emacsen.darwin
+    zhuk.ghostty
     iina
     monitorcontrol
     localsend
