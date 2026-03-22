@@ -155,7 +155,9 @@ in {
     promptInit = ''
       setopt PROMPT_SUBST
       PROMPT='%B%F{green}%*%f@%F{blue}%U%m%u%f %F{yellow}%~%f %(?.%F{green}>.%F{red}[%?]>)%f%b '
-    ''; # ''''; # ''[[ $TERM != "dumb" ]] && eval "$(''${getExe' starship "starship"} init zsh)"'';
+    '';
+    # '''';
+    # ''[[ $TERM != "dumb" ]] && eval "$(''${getExe' starship "starship"} init zsh)"'';
     shellInit =
       ''''
       + lib.optionalString isWSL ''
@@ -536,6 +538,7 @@ in {
         # }))
         carapace
         zsh-fzf-tab
+        forgejo-cli
       ]
       ++ shells;
     pathsToLink = ["/share/zsh"];
@@ -577,7 +580,7 @@ in {
         );
         flake-path = builtins.readFile inputs.flake-path.outPath;
       in rec {
-        NIXPKGS_REV = "fef542e7a88eec2b698389e6279464fd479926b6";
+        NIXPKGS_REV = "9cf7092bdd603554bd8b63c216e8943cf9b12512";
         PAGER = "${pkgs.delta}/bin/delta";
         MANPAGER = "${manpager}/bin/manpager";
         EDITOR = getExe' pkgs.nvim-wrapped "nvim";

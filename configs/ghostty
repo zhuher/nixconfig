@@ -73,5 +73,5 @@ font-feature=+ss11
 font-feature=+zero
 # font }}}
 # background-opacity-cells = true
-shell-integration = none
-command = /run/current-system/sw/bin/nu
+shell-integration = zsh
+# command = /run/current-system/sw/bin/nu

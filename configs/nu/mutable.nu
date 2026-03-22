@@ -34,6 +34,12 @@ use "awg-quick extern" "awg-quick up"
 use "awg-quick extern" "awg-quick down"
 alias "aa up" = awg-quick up
 alias "aa down" = awg-quick down
+def --wrapped n [...rest] {
+  use std/dirs
+  dirs add $"($env.NH_FLAKE)"
+  ^just ...$rest
+  dirs drop
+}
 def "nu-complete zoxide path" [context: string] {
     let parts = $context | str trim --left | split row " " | skip 1 | each { str downcase }
     let completions = (
@@ -95,6 +101,15 @@ let external_completer = {|spans|
         launchctl => $fish_completer
         _ => $carapace_completer
     } | do $in $spans
+}
+def latesthash [] {
+  curl -sL "https://monitoring.nixos.org/prometheus/api/v1/query?query=channel_revision" | from json | get data.result.metric | where {|m| $m.channel == "nixpkgs-unstable"} | get revision.0
+}
+def update-nixpkgs [] {
+  use std/dirs
+  dirs add $env.NH_FLAKE
+  sed -i $"s/($env.NIXPKGS_REV)/(latesthash)/g" ...(glob -D ./**/*.nix)
+  dirs drop
 }
 $env.config = {
   show_banner: false,

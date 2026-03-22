@@ -22,9 +22,16 @@
         delta = getExe pkgs.delta;
         dig = getExe' pkgs.dnsutils "dig";
         mkLk = inner.config.lib.file.mkOutOfStoreSymlink;
+        LAPS = "Library/Application Support";
       in {
         xdg.configFile = {
           # {{{
+          # nushell {{{
+          "nushell" = {
+            source = mkLk "${env.HOME}/${LAPS}/nushell";
+            recursive = true;
+          };
+          # nushell }}}
           # emacs {{{
           "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
           "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
@@ -72,9 +79,7 @@
         }; # }}}
         home = {
           stateVersion = "25.11";
-          file = let
-            LAPS = "Library/Application Support";
-          in {
+          file = {
             # {{{
             ".bashrc".text = ''
               if [ -n "$GHOSTTY_RESOURCES_DIR" ]; then
@@ -95,14 +100,15 @@
               def prepath [path: string] {
                 $env.PATH | split row (char esep) | where { $in != $path} | prepend $path
               }
-              $env.PATH = prepath "/run/current-system/sw/bin"
               $env.PATH = prepath "/opt/homebrew/bin"
               $env.PATH = prepath "/opt/homebrew/sbin"
               $env.PATH = prepath "/Users/${currentSystemUser}/.nix-profile/bin"
               $env.PATH = prepath "/etc/profiles/per-user/${currentSystemUser}/bin"
               $env.PATH = prepath "/nix/var/nix/profiles/default/bin"
+              $env.PATH = prepath "/run/current-system/sw/bin"
               ${getExe' pkgs.coreutils "dircolors"} --c-shell | parse "setenv {key} {val}" | transpose -rd | load-env
               $env.NH_FLAKE = "${env.NH_FLAKE}"
+              $env.NIXPKGS_REV = "${env.NIXPKGS_REV}"
               if (not ($"($zhukcfg)/autoload" | path exists)) { mkdir $"($zhukcfg)/autoload" }
               # carapace
               $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
@@ -112,15 +118,6 @@
 
               source $"($zhukcfg)/zoxide.nu"
 
-              use std/dirs
-              def n [action?: string] {
-                dirs add ${env.NH_FLAKE}
-                match $action {
-                  null => { ${getExe pkgs.just} }
-                  _ => { ${getExe pkgs.just} $action }
-                }
-                dirs drop
-              }
               # https://github.com/bydmiller/nixos-configs/blob/6a7053f1e081c21cf4362724b57d3d70e63198ed/machines/nebula/homes/zsh/aliases.nix#L63-L64
               alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short
               alias canihazip4 = ${dig} @resolver4.opendns.com myip.opendns.com +short -4

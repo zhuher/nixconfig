@@ -17,6 +17,9 @@ help:
     @echo "config           : {{NIX_CONFIG}}"
     just --list
 # updates inputs
+update *inputs:
+    nix flake update {{inputs}}
+# updates inputs and switches
 upgrade *extra-args:
     nh "{{SYS}}" switch --impure -u --diff=always --cores="$(nproc)" "{{CONFIG_DIR}}#{{CONFIG}}Configurations.{{HOST}}" -- --override-input flake-path file+file://<(printf "{{CONFIG_DIR}}") {{extra-args}}
 # applies current config onto the system

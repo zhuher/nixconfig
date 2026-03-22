@@ -6,7 +6,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "flake-path";
     };
-    nixpkgs.url = "github:nixos/nixpkgs/fef542e7a88eec2b698389e6279464fd479926b6";
+    nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
     nixos-wsl = {
       # Build a custom WSL installer
       url = "github:nix-community/NixOS-WSL"; # "/bc827c2924c46f2344d3168fd82c6711aaceb610"; # next commit broke mount root regex check
