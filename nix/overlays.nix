@@ -612,7 +612,7 @@ final: _prev: {
       epkg = final.emacs-git.override {
         withNativeCompilation = true;
         withCsrc = true;
-        withImageMagick = true;
+        withImageMagick = false;
         withMailutils = true;
         withSQLite3 = true;
         withToolkitScrollBars = true;

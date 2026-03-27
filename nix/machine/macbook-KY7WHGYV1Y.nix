@@ -8,18 +8,31 @@
   env = config.environment.variables;
 in {
   services.openssh.enable = false;
-  environment.systemPackages = with pkgs; [
-    (writeZig zig "hello-zig" ''
-      const std = @import("std");
-      pub fn main() void {
-        std.debug.print("hello from a nix package!", .{});
-      }
-    '' "-O ReleaseSafe")
-  ];
+  environment = {
+    variables = {
+      RUSTC_WRAPPER = "${lib.getExe pkgs.sccache}";
+      SCCACHE_DIR = "${config.users.users."${currentSystemUser}".home}/.cache/sccache";
+      SCCACHE_CACHE_SIZE = "100G";
+    };
+    systemPackages = with pkgs; [
+      (writeZig zig "hello-zig" ''
+        const std = @import("std");
+        pub fn main() void {
+          std.debug.print("hello from a nix package!", .{});
+        }
+      '' "-O ReleaseSafe")
+      sccache
+    ];
+  };
   homebrew = {
     casks = ["dbeaver-community"];
   };
-  programs.xstarbound.enable = lib.mkForce false;
+  programs = {
+    xstarbound.enable = lib.mkForce false;
+    zsh.interactiveShellInit = ''
+      ulimit -n 65535
+    '';
+  };
   security.pki = {
     installCACerts = true;
     certificates = [
