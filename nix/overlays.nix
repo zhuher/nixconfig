@@ -34,11 +34,11 @@ final: _prev: {
       name = "nvim";
       paths = [neovim-unwrapped];
       nativeBuildInputs = [makeBinaryWrapper];
-      buildInputs = [git lua-language-server];
       postBuild = ''
         wrapProgram $out/bin/nvim \
         --add-flags '-u' \
-        --add-flags '${../configs/nvim.lua}'
+        --add-flags '${../configs/nvim.lua}' \
+        --prefix PATH : ${final.lib.makeBinPath (with final; [git emmylua-ls])}
       '';
     };
   # nvim }}}
@@ -610,47 +610,183 @@ final: _prev: {
     emacs = let
       # compilation opts {{{
       epkg = final.emacs-git.override {
-        withNativeCompilation = true;
-        withCsrc = true;
-        withImageMagick = false;
-        withMailutils = true;
-        withSQLite3 = true;
-        withToolkitScrollBars = true;
-        withTreeSitter = true;
-        withWebP = true;
-        withCompressInstall = true;
+        # # Boolean flags
+        # withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+        # noGui ? false,
+        # srcRepo ? false,
+        # withAcl ? false,
+        # withAlsaLib ? false,
+        # withAthena ? false,
+        # withCairo ? withX,
+        # withCsrc ? true,
+        # withDbus ? stdenv.hostPlatform.isLinux,
+        # # https://github.com/emacs-mirror/emacs/blob/emacs-30.2/etc/NEWS#L52-L56
+        # withGcMarkTrace ? false,
+        # withGTK3 ? withPgtk && !noGui,
+        # withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets),
+        # withGpm ? stdenv.hostPlatform.isLinux,
+        # # https://github.com/emacs-mirror/emacs/blob/emacs-27.2/etc/NEWS#L118-L120
+        # withImageMagick ? false,
+        # # Emacs 30+ has native JSON support
+        # withJansson ? lib.versionOlder version "30",
+        # withMailutils ? true,
+        # withMotif ? false,
+        # withNS ? stdenv.hostPlatform.isDarwin && !(variant == "macport" || noGui),
+        # withPgtk ? false,
+        # withSelinux ? stdenv.hostPlatform.isLinux,
+        # withSQLite3 ? true,
+        # withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+        # withToolkitScrollBars ? true,
+        # withTreeSitter ? true,
+        # withWebP ? true,
+        # withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
+        # withXinput2 ? withX,
+        # withXwidgets ?
+        #   !noGui
+        #   && (withGTK3 || withPgtk || withNS || variant == "macport")
+        #   && (stdenv.hostPlatform.isDarwin || lib.versionOlder version "30"),
+        # # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
+        # # XXX: - Apple_SDK WebKit is compatible with Emacs.
+        # withSmallJaDic ? false,
+        withSmallJaDic = true;
+        # withCompressInstall ? true,
       }; # compilation opts }}} # final.callPackage "${final.helix}/grammars.nix" {};
     in
       {
         "aarch64-darwin" =
           # emacs on darwin {{{
-          (final.emacsPackagesFor (
-            epkg.overrideAttrs (old: {
-              # __noChroot = false; # [INFO]: cannot access /etc/ssl/certs otherwise (Operation not permitted)
-              patches =
-                old.patches
-                ++ [
-                  # order taken from https://github.com/bbenchen/homebrew-emacs-plus/blob/9976d930dd3296a12474c08dc215ad6ac49ca5d8/Formula/emacs-plus%4031.rb#L107-L116
-                  (final.fetchpatch {
-                    url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/system-appearance.patch";
-                    sha256 = "sha256-4+2U+4+2tpuaThNJfZOjy1JPnneGcsoge9r+WpgNDko=";
-                  })
-                  (final.fetchpatch {
-                    url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/8dbc7c832322091349b4c55884b4e9ffef655cb7/patches/emacs-31/round-undecorated-frame.patch";
-                    sha256 = "sha256-WWLg7xUqSa656JnzyUJTfxqyYB/4MCAiiiZUjMOqjuY=";
-                  })
-                  (final.fetchpatch {
-                    url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/9976d930dd3296a12474c08dc215ad6ac49ca5d8/patches/emacs-31/alpha-background.patch";
-                    sha256 = "sha256-qfZhWue2RgwEbiz64nKL0Nq5/loMGhg5oDK+gCNyHOg=";
-                  })
-                  (final.fetchpatch {
-                    url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/ac5d6b64dc2b3567f12145c687ee3febf9597ec8/patches/emacs-30/blur.patch";
-                    sha256 = "sha256-X6ml5Gr5vUaQSb38H92lhK8X9D6oDL4bzmO1ujS74ws=";
-                  })
-                ];
-            })
-          )).emacsWithPackages
-          (epkgs: with epkgs; [treesit-grammars.with-all-grammars]); # emacs on darwin }}}
+          # (final.emacsPackagesFor (
+          epkg.overrideAttrs (old: {
+            __noChroot = true; # [INFO]: cannot access /etc/ssl/certs otherwise (Operation not permitted)
+            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [_prev.makeBinaryWrapper];
+            postInstall =
+              (old.postInstall or "")
+              + ''
+                emacs_version=$(ls "$out/share/emacs" | grep -E '^[0-9]' | sort -V | tail -1)
+                old_pdmp=$(find "$out/libexec/emacs/$emacs_version" -name 'emacs-*.pdmp' 2>/dev/null | head -1)
+                if [ -n "$old_pdmp" ]; then
+                  tmp_pdmp="$old_pdmp.tmp"
+                  eln_dir="$out/lib/emacs/$emacs_version/native-lisp"
+                  elisp_file=$(mktemp "$TMPDIR/emacs-redump-XXXXXX.el")
+                  cat > "$elisp_file" << ELISP
+                ; Fix pdmp-frozen variables that point to the build sandbox.
+                (when (boundp 'native-comp-eln-load-path)
+                  (setq native-comp-eln-load-path (list "$eln_dir/")))
+                (setq temporary-file-directory "/tmp/")
+                ; source-directory captures the unpacked build tree path. Emacs source
+                ; is not installed to the store, but $out is a better fallback than a
+                ; stale sandbox path — prevents "Listing directory failed" errors from
+                ; xref/find-function trying to scan the missing build dir.
+                (setq source-directory "$out/share/emacs/$emacs_version/src/")
+                ; package-directory-list is frozen in the pdmp at emacs-git build time
+                ; when no user packages are present. When this emacs is later used to
+                ; build elisp packages, EMACSLOADPATH adds deps to load-path but
+                ; package-directory-list (already bound → defcustom is a no-op) does
+                ; not include their elpa dirs, so package-activate-all cannot find deps.
+                ;
+                ; Fix: use with-eval-after-load so that AFTER package.el loads (triggered
+                ; by the -f package-activate-all autoload), we reset package-directory-list
+                ; from the current load-path (which includes EMACSLOADPATH additions) and
+                ; call package-initialize to populate package-alist.
+                ;
+                ; NOTE: advice-add before package.el loads is wiped when defun redefines
+                ; the symbol; with-eval-after-load ensures the hook runs after defun.
+                ; Gate on noninteractive: in interactive Emacs, package-activate-all is
+                ; called at startup which triggers this hook and resets package-alist,
+                ; breaking package activation (org-mode not rendering, treesit nil, etc.).
+                ; Only batch/build-time invocations need this fix.
+                (with-eval-after-load 'package
+                  (when noninteractive
+                    (setq package-directory-list
+                      (let (result)
+                        (dolist (f load-path)
+                          (and (stringp f)
+                               (equal (file-name-nondirectory f) "site-lisp")
+                               (push (expand-file-name "elpa" f) result)))
+                        (nreverse result)))
+                    (unless (bound-and-true-p package--initialized)
+                      (package-initialize t))))
+                ; Re-enable global minor modes that batch mode leaves disabled but
+                ; the original pdmp (built by loadup.el) had enabled. Without this,
+                ; interactive Emacs inherits the batch-mode nil state.
+                (global-font-lock-mode 1)
+                (transient-mark-mode 1)
+                (dump-emacs-portable "$tmp_pdmp")
+                ELISP
+                  EMACSDATA="$out/share/emacs/$emacs_version/etc" \
+                  EMACSLOADPATH="$out/share/emacs/$emacs_version/lisp:" \
+                    "$out/bin/emacs" \
+                      --dump-file "$old_pdmp" \
+                      --batch \
+                      --no-site-file \
+                      --load "$elisp_file" \
+                    && mv "$tmp_pdmp" "$old_pdmp" \
+                    || echo "Warning: emacs re-dump failed, continuing with original pdmp"
+                  rm -f "$elisp_file"
+                fi
+                wrapProgram "$out/bin/emacs" \
+                  --set-default EMACSDATA "$out/share/emacs/$emacs_version/etc"
+              '';
+            patches =
+              old.patches
+              ++ [
+                # order taken from https://github.com/bbenchen/homebrew-emacs-plus/blob/9976d930dd3296a12474c08dc215ad6ac49ca5d8/Formula/emacs-plus%4031.rb#L107-L116
+                # and mixed with https://github.com/d12frosted/homebrew-emacs-plus/blob/df393ba5a3f10183fe77a3cf792d15cded73595d/Formula/emacs-plus%4031.rb#L75-L77
+                # (final.fetchpatch {
+                #   url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/df393ba5a3f10183fe77a3cf792d15cded73595d/patches/emacs-31/fix-ns-x-colors.patch";
+                #   sha256 = "sha256-oe3DFgEXwp0cZJl+ufWqTonaeWSliikTRsVDNbcy4Yw=";
+                # })
+                (final.fetchpatch {
+                  url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/system-appearance.patch";
+                  sha256 = "sha256-4+2U+4+2tpuaThNJfZOjy1JPnneGcsoge9r+WpgNDko=";
+                })
+                (final.fetchpatch {
+                  url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/round-undecorated-frame.patch";
+                  sha256 = "sha256-WWLg7xUqSa656JnzyUJTfxqyYB/4MCAiiiZUjMOqjuY=";
+                })
+                (final.fetchpatch {
+                  url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/9976d930dd3296a12474c08dc215ad6ac49ca5d8/patches/emacs-31/alpha-background.patch";
+                  sha256 = "sha256-qfZhWue2RgwEbiz64nKL0Nq5/loMGhg5oDK+gCNyHOg=";
+                })
+                (final.fetchpatch {
+                  url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/ac5d6b64dc2b3567f12145c687ee3febf9597ec8/patches/emacs-30/blur.patch";
+                  sha256 = "sha256-X6ml5Gr5vUaQSb38H92lhK8X9D6oDL4bzmO1ujS74ws=";
+                })
+                # (final.writeText "interactive-ns_init_colors.patch" ''
+                #   Skip NS color initialization in batch mode (bug#80377 workaround)
+                #
+                #   Commit b7aca342e6 moved ns_init_colors() to main() in emacs.c before
+                #   init_lread().  At that point data-directory still holds the stale value
+                #   from the pdump (the build sandbox path) because init_lread() has not
+                #   recalculated it yet.  In Nix builds the sandbox path no longer exists,
+                #   so reading rgb.txt fails and kills the process.
+                #
+                #   Guard the call with !noninteractive so batch-mode byte-compilation
+                #   (used by Nix elisp package builds) skips color init entirely.
+                #
+                #   Trade-off: elisp running in --batch that queries X11 color names will
+                #   not have the full color list.  This is acceptable because batch mode
+                #   has no display and color queries are meaningless there.
+                #
+                #   diff --git a/src/emacs.c b/src/emacs.c
+                #   index 8e3d528dcea..01a971095bd 100644
+                #   --- a/src/emacs.c
+                #   +++ b/src/emacs.c
+                #   @@ -2066,7 +2066,7 @@ Using an Emacs configured with --with-x-toolkit=lucid does not have this problem
+                #
+                #    #ifdef HAVE_NS
+                #      /* For early calls to ns_lisp_to_color or Fns_list_colors.  */
+                #   -  if (!dump_mode)
+                #   +  if (!dump_mode && !noninteractive)
+                #        ns_init_colors ();
+                #
+                #      if (!noninteractive)
+                # '')
+              ];
+          })
+          # )).emacsWithPackages
+          # (epkgs: with epkgs; [treesit-grammars.with-all-grammars])
+          ; # emacs on darwin }}}
         "x86_64-linux" = (final.emacsPackagesFor epkg).emacsWithPackages (epkgs:
           with epkgs; [
             treesit-grammars.with-all-grammars

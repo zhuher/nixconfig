@@ -39,9 +39,14 @@ in {
       "Wi-Fi"
     ];
   };
-  users.users.${currentSystemUser}.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHQ9MGKngwot96l+oEd7B3IF8db64kwWTjx1R/85ORs6"
-  ];
+  users.users.${currentSystemUser}.openssh = {
+    extraConfig = ''
+      PermitTunnel yes
+    '';
+    authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHQ9MGKngwot96l+oEd7B3IF8db64kwWTjx1R/85ORs6"
+    ];
+  };
   programs.zsh.interactiveShellInit = ''
     alias -- emg='open -a EmacsClient'
     source ${config.sops.secrets.secret-script-1.path}
@@ -105,7 +110,88 @@ in {
       };
     };
   };
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; let
+    # jujutsu-wrapped {{{
+    jujutsu-wrapped = let
+      # config {{{
+      jjconf = (formats.toml {}).generate "jj.toml" {
+        colors."commit_id prefix".bold = true;
+        revsets.log = ''@ | ancestors(immutable_heads()..) | trunk()'';
+        template-aliases = {
+          "format_short_id(id)" = "id.shortest()";
+          "format_timestamp(timestamp)" = ''timestamp ++ "(" ++ timestamp.ago() ++ ")"'';
+        };
+        ui = {
+          default_command = ["log" "--no-pager" "--limit=6"];
+          diff-editor = ["${lib.getExe' pkgs.nvim-wrapped "nvim"}" "-c" "DiffEditor $left $right $output"];
+          pager = "${lib.getExe delta}";
+          diff-formatter = ":git";
+        };
+        templates = {
+          log_node = ''
+            coalesce(
+              if(!self, "🮀"),
+              if(current_working_copy, "@"),
+              if(root, "┴"),
+              if(immutable, "●", "○"),
+            )'';
+        };
+        op_log_node = ''if(current_operation, "@", "○")'';
+        snapshot.max-new-file-size = 16777216;
+        aliases = {
+          my-inline-script = [
+            "util"
+            "exec"
+            "--"
+            "bash"
+            "-c"
+            ''
+              #!/usr/bin/env bash
+              set -euo pipefail
+              echo "Look Ma, everything in one file!"
+              echo "args: $@"
+            ''
+            ""
+          ];
+          yolo = [
+            "util"
+            "exec"
+            "--"
+            "bash"
+            "-c"
+            ''
+              jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
+            ''
+            ""
+          ];
+          pull-subs = [
+            "util"
+            "exec"
+            "--"
+            "bash"
+            "-c"
+            ''
+              git submodule update --init
+            ''
+            ""
+          ];
+        };
+      };
+      # config }}}
+    in
+      symlinkJoin {
+        name = "jujutsu-wrapped";
+        paths = [jujutsu];
+        nativeBuildInputs = [makeBinaryWrapper];
+        buildInputs = [delta pkgs.nvim-wrapped];
+        postBuild = ''
+          wrapProgram $out/bin/jj \
+          --set JJ_CONFIG "${"${jjconf}:${config.sops.secrets.jjsecrets.path}"}"
+        '';
+      };
+    # jujutsu-wrapped }}}
+  in [
+    jujutsu-wrapped
     # cataclysm-dda-git
     crawl
     zhuk.monero-cli

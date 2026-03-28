@@ -5,6 +5,7 @@
 }: let
   keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAmqp+RfNqw0LXFBRe0WNL+0+YzlMlfztMMzJmnGtMmw"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHQ9MGKngwot96l+oEd7B3IF8db64kwWTjx1R/85ORs6"
   ];
 in {
   programs.nh = {
@@ -22,12 +23,13 @@ in {
     openssh = {
       enable = true;
       settings = {
-        PermitRootLogin = "yes";
+        PermitRootLogin = "prohibit-password";
         PasswordAuthentication = false;
       };
       openFirewall = true;
     };
   };
+  networking.networkmanager.enable = true;
   users.users = {
     "${currentSystemUser}" = {
       uid = 1000;
@@ -36,14 +38,14 @@ in {
       extraGroups = [
         "wheel"
       ];
-      initialHashedPassword = "$6$rounds=6901337$dkuHV9Y6YarEavnp$nfsXc1d3F5T/RbzUPtHSvYKw8NSr1lQpLVyxfx6PgCgdlbSEvpPy9D4utNZ6Khf1VU8b0UrpdqM4sBECJsU8q1";
+      initialHashedPassword = "$y$j9T$xye5QhLru1t0MXOaUZeFo.$lxYiEA6esvOlkuCM8TqS9RbTQChgGjD9eeeVXv4kZnD";
       openssh.authorizedKeys.keys = keys;
       linger = true; # run user's units independent of login
     };
     root = {
       extraGroups = [
       ];
-      initialHashedPassword = "$6$rounds=6901337$YAbU3RUwNYFvWBXh$vqAhp0Y8Heiuwwdf0EbYMa.l61WwhNveASUIPf2KBwE8/k/PSUGxxMM9Xd7kYDkM/m0446w8Cts8iN0Kst81D0";
+      initialHashedPassword = "$y$j9T$acCG2bQZowJTAN5su9oOL1$0dJ4ZYLnYiKegKyGe9a9wNbICQUa3w3mQTWw2W4a9Q0";
       openssh.authorizedKeys.keys = keys;
     };
   };

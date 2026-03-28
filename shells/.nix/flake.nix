@@ -30,6 +30,7 @@
             jq
             git
             gnused
+            zsh
             # Add your development environment packages here
           ];
         };

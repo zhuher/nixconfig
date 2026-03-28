@@ -6,6 +6,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "flake-path";
     };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
     nixos-wsl = {
       # Build a custom WSL installer
@@ -120,6 +124,7 @@
             then "darwin"
             else "nixos"
           }Modules".sops
+          inputs.disko.nixosModules.default
           inputs.home-manager.darwinModules.home-manager
           inputs.xsb.nixosModules.default
           inputs.nix-index-database."${
@@ -150,11 +155,6 @@
             then inputs.nixos-wsl.nixosModules.wsl
             else {}
           )
-          inputs.sops-nix."${
-            if isDarwin
-            then "darwin"
-            else "nixos"
-          }Modules".sops
         ];
       };
   in {
@@ -197,6 +197,11 @@
       }
     );
     nixosConfigurations = {
+      celebrimbor = mkSystem "celebrimbor" {
+        system = "x86_64-linux";
+        user = "zhuher";
+        isWSL = false;
+      };
       wsl = mkSystem "wsl" {
         system = "x86_64-linux";
         user = "zhuher";

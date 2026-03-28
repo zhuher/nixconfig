@@ -1,8 +1,8 @@
 set shell := ["zsh", "-cu"]
 NIXUSER := env('NIXUSER', `whoami`)
 export NIX_CONFIG := "extra-experimental-features = nix-command flakes
-extra-sandbox-paths = /usr/bin"
-CONFIG_DIR := justfile_directory()
+extra-sandbox-paths = /usr/bin/codesign"
+CONFIG_DIR := env('NH_FLAKE', justfile_directory())
 UNAME := `uname -a`
 HOST := env('NIXHOST', `hostname`)
 SYS := if UNAME =~ ".*Darwin.*" { "darwin" } else { "os" }
@@ -22,6 +22,9 @@ update *inputs:
 # updates inputs and switches
 upgrade *extra-args:
     nh "{{SYS}}" switch --impure -u --diff=always --cores="$(nproc)" "{{CONFIG_DIR}}#{{CONFIG}}Configurations.{{HOST}}" -- --override-input flake-path file+file://<(printf "{{CONFIG_DIR}}") {{extra-args}}
+# builds current
+build *extra-args:
+    nh "{{SYS}}" build --impure --diff=always --cores="$(nproc)" "{{CONFIG_DIR}}#{{CONFIG}}Configurations.{{HOST}}" -- --override-input flake-path file+file://<(printf "{{CONFIG_DIR}}") {{extra-args}}
 # applies current config onto the system
 switch *extra-args:
     nh "{{SYS}}" switch --impure --diff=always --cores="$(nproc)" "{{CONFIG_DIR}}#{{CONFIG}}Configurations.{{HOST}}" -- --override-input flake-path file+file://<(printf "{{CONFIG_DIR}}") {{extra-args}}

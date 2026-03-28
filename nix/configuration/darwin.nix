@@ -152,6 +152,7 @@ in {
     ];
 
     casks = [
+      "lulu"
       "moonlight"
       "orion"
       "qlmarkdown"
@@ -385,11 +386,21 @@ in {
     # utm # [ERROR] le errare abobuous
   ];
   nix = {
-    optimise.automatic = false;
+    extraOptions = ''
+      !include ${config.sops.secrets.access-tokens.path}
+    '';
+    optimise = {
+      interval = {
+        Weekday = 0;
+        Hour = 23;
+        Minute = 0;
+      };
+      automatic = false;
+    };
     settings = {
       allowed-impure-host-deps = ["/bin/sh" "/usr/lib/libSystem.B.dylib" "/usr/lib/system/libunc.dylib" "/dev/zero" "/dev/random" "/dev/urandom"];
-      # extra-sandbox-paths = ["${env.HOME}/ca_cert.pem"];
     };
+    gc.automatic = false;
   };
   services.openssh.enable = lib.mkDefault true;
   security.pam.services.sudo_local.touchIdAuth = true;

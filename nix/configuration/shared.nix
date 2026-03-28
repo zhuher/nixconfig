@@ -22,7 +22,7 @@ in {
     ./lix.nix
   ];
   programs.xstarbound = {
-    enable = true;
+    enable = lib.mkDefault true;
     # package = let
     #   curSys = pkgs.stdenv.hostPlatform.system;
     # in
@@ -77,24 +77,11 @@ in {
   documentation.man.enable = true;
   time.timeZone = "Europe/Moscow";
   nix = {
-    extraOptions = ''
-      !include ${config.sops.secrets.access-tokens.path}
-    '';
     gc = {
-      #   interval = {
-      #     Weekday = 0;
-      #     Hour = 23;
-      #     Minute = 0;
-      #   };
-      automatic = false;
+      automatic = lib.mkDefault true;
     };
     optimise = {
-      interval = {
-        Weekday = 0;
-        Hour = 23;
-        Minute = 0;
-      };
-      automatic = lib.mkDefault false;
+      automatic = lib.mkDefault true;
     };
     registry = pkgs.lib.mapAttrs (_: value: {flake = value;}) inputs;
     nixPath = pkgs.lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry;
@@ -105,6 +92,7 @@ in {
       auto-optimise-store = false;
       cores = 0;
       sandbox = lib.mkDefault true; # [INFO]: "relaxed" or bool;
+      extra-sandbox-paths = ["/usr/bin/strip" "/usr/bin/codesign"];
       extra-substituters = [
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
@@ -276,85 +264,6 @@ in {
         '';
       };
       # gnupg-wrapped }}}
-      # jujutsu-wrapped {{{
-      jujutsu-wrapped = let
-        # config {{{
-        jjconf = (formats.toml {}).generate "jj.toml" {
-          colors."commit_id prefix".bold = true;
-          revsets.log = ''@ | ancestors(immutable_heads()..) | trunk()'';
-          template-aliases = {
-            "format_short_id(id)" = "id.shortest()";
-            "format_timestamp(timestamp)" = ''timestamp ++ "(" ++ timestamp.ago() ++ ")"'';
-          };
-          ui = {
-            default_command = ["log" "--no-pager" "--limit=6"];
-            diff-editor = ["${lib.getExe' pkgs.nvim-wrapped "nvim"}" "-c" "DiffEditor $left $right $output"];
-            pager = "${lib.getExe delta}";
-            diff-formatter = ":git";
-          };
-          templates = {
-            log_node = ''
-              coalesce(
-                if(!self, "🮀"),
-                if(current_working_copy, "@"),
-                if(root, "┴"),
-                if(immutable, "●", "○"),
-              )'';
-          };
-          op_log_node = ''if(current_operation, "@", "○")'';
-          snapshot.max-new-file-size = 16777216;
-          aliases = {
-            my-inline-script = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                #!/usr/bin/env bash
-                set -euo pipefail
-                echo "Look Ma, everything in one file!"
-                echo "args: $@"
-              ''
-              ""
-            ];
-            yolo = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
-              ''
-              ""
-            ];
-            pull-subs = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                git submodule update --init
-              ''
-              ""
-            ];
-          };
-        };
-        # config }}}
-      in
-        symlinkJoin {
-          name = "jujutsu-wrapped";
-          paths = [jujutsu];
-          nativeBuildInputs = [makeBinaryWrapper];
-          buildInputs = [delta pkgs.nvim-wrapped];
-          postBuild = ''
-            wrapProgram $out/bin/jj \
-            --set JJ_CONFIG "${"${jjconf}:${config.sops.secrets.jjsecrets.path}"}"
-          '';
-        };
-      # jujutsu-wrapped }}}
     in
       [
         zig
@@ -362,6 +271,10 @@ in {
         (zen-browser.override
           {
             policies = {
+              Cookies = {
+                Locked = true;
+                Behavior = "reject-tracker-and-partition-foreign";
+              };
               DisableAppUpdate = true;
               # DisableMasterPasswordCreation = true;
               DisablePocket = true;
@@ -387,11 +300,32 @@ in {
                 Uninstall = [];
                 Install = [];
               };
+              PictureInPicture = {
+                Enabled = true;
+                Locked = true;
+              };
+              DisableFirefoxStudies = true;
+              UserMessaging = {
+                ExtensionRecommendations = false;
+                UrlbarInterventions = false;
+                SkipOnboarding = true;
+                MoreFromMozilla = false;
+                FirefoxLabs = true;
+                FeatureRecommendations = false;
+              };
+              NetworkPrediction = false;
               SearchEngines = {
-                Remove = [];
+                Remove = ["Bing" "Wikipedia"];
                 Default = "Google";
                 Add = [];
               };
+              HttpsOnlyMode = "force_enabled";
+              SSLVersionMin = "tls1.2";
+              PostQuantumKeyAgreementEnabled = true;
+              HttpAllowlist = [
+                "http://localhost"
+                "http://127.0.0.1"
+              ];
               Preferences = let
                 lock = Value: {
                   inherit Value;
@@ -474,6 +408,7 @@ in {
                     (extension (a3 "fastforwardteam" "addon@fastforward.team" true))
                     (extension (a4 "istilldontcareaboutcookies" "idcac-pub@guus.ninja" "navbar" true))
                     (extension (a2 "indie-wiki-buddy" "{cb31ec5d-c49a-4e5a-b240-16c767444f62}"))
+                    (extension (a2 "tridactyl-vim" "tridactyl.vim@cmcaine.co.uk"))
                     # (extension (
                     #   a4 "localcdn-fork-of-decentraleyes" "{b86e4813-687a-43e6-ab65-0bde4ab75758}" "menupanel" true
                     # ))
@@ -515,7 +450,6 @@ in {
         git
         gnutar
         jq
-        jujutsu-wrapped
         just
         nh
         nil
@@ -548,7 +482,6 @@ in {
         l = "${getExe pkgs.eza} --all --oneline --classify=auto --colour=auto --icons=auto --hyperlink";
         ls = "${getExe pkgs.eza} --all --bytes --smart-group --modified --oneline --long --classify=auto --colour=auto --icons=auto --hyperlink";
         lstr = "${ls} --tree --ignore-glob '.git|.jj|.direnv' --group-directories-first";
-        # aa = "awg-quick";
         c = "clear";
         cd = "z";
         cp = "cp -irv";
@@ -556,6 +489,7 @@ in {
         jjl = "jj log -r '@ | ancestors(immutable_heads()..) | trunk()' --no-pager --limit=6";
         mv = "mv -iv";
         nv = "nvim";
+        nvi = ''${getExe' pkgs.nvim-wrapped "nvim"} -u "${env.NH_FLAKE}/configs/nvim.lua"'';
         rm = "rm -irv";
         tmux = "TERM=xterm-256color tmux";
         # make sudo use aliases (https://github.com/sukhmancs/nixos-configs/blob/c4dbf10fb95f3237130a0b1a899a688ca9c77d32/machines/nebula/homes/zsh/aliases.nix#L12)

@@ -8,15 +8,7 @@
   ...
 } @ outer: {
   home-manager = let
-    home = (
-      #   let
-      #   lwHome = "${
-      #     if isDarwin
-      #     then "Library/Application Support/"
-      #     else "."
-      #   }librewolf";
-      # in
-      {lib, ...} @ inner: let
+    home = {lib, ...} @ inner: let
         env = config.environment.variables;
         inherit (outer.lib) getExe getExe';
         delta = getExe pkgs.delta;
@@ -33,8 +25,8 @@
           };
           # nushell }}}
           # emacs {{{
-          "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
-          "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
+          # "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
+          # "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
           # emacs }}}
           # git {{{
           "git/ignore".text = ''
@@ -408,8 +400,7 @@
         #     };
         #   };
         # # firefox }}}
-      }
-    );
+      };
   in {
     useGlobalPkgs = true;
     useUserPackages = true;
