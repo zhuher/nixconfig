@@ -1,6 +1,8 @@
-final: _prev: {
-  # zig = final.zigpkgs."0_15_2";
-  # zls = final.zigpkgs."0_15_2".zls;
+final: _prev: let
+  fcp = final.lpkgs.callPackage; # [FIXME] have not found a way to override callPackage without encountering infinite recursion
+in {
+  # zig = final.zigpkgs."0_16_0";
+  # zls = final.zigpkgs.zls-master;
   # wrappers {{{
   # bat {{{
   bat-wrapped = with final;
@@ -58,7 +60,7 @@ final: _prev: {
   # }}}
   # syncthing {{{
   syncthing =
-    final.callPackage (
+    fcp (
       {
         lib,
         fetchurl,
@@ -154,7 +156,7 @@ final: _prev: {
     '';
     # notify }}}
     # alex313031-codium {{{
-    alex313031-codium = final.callPackage ({
+    alex313031-codium = fcp ({
       lib,
       fetchurl,
       stdenv,
@@ -214,7 +216,7 @@ final: _prev: {
         })) {};
     # alex313031-codium }}}
     # ghostty {{{
-    ghostty = final.callPackage ({
+    ghostty = fcp ({
       lib,
       fetchurl,
       stdenv,
@@ -287,7 +289,7 @@ final: _prev: {
       }) {};
     # ghostty }}}
     # thorium-browser {{{
-    thorium-browser = final.callPackage ({
+    thorium-browser = fcp ({
       lib,
       fetchurl,
       stdenv,
@@ -330,7 +332,7 @@ final: _prev: {
       }) {};
     # thorium-browser }}}
     # monero-cli {{{
-    monero-cli = final.callPackage ({
+    monero-cli = fcp ({
       lib,
       fetchurl,
       stdenv,
@@ -378,7 +380,7 @@ final: _prev: {
       }) {};
     # monero-cli }}}
     # mullvad-upgrade-tunnel {{{
-    mullvad-upgrade-tunnel = final.callPackage ({
+    mullvad-upgrade-tunnel = fcp ({
       lib,
       fetchFromGitHub,
       gnumake,
@@ -440,7 +442,7 @@ final: _prev: {
       }) {};
     # mullvad-upgrade-tunnel }}}
     # tile-thumbnails {{{
-    tile-thumbnails = final.callPackage ({
+    tile-thumbnails = fcp ({
       writeTextFile,
       ffmpeg,
       gawk,
@@ -650,7 +652,7 @@ final: _prev: {
         # withSmallJaDic ? false,
         withSmallJaDic = true;
         # withCompressInstall ? true,
-      }; # compilation opts }}} # final.callPackage "${final.helix}/grammars.nix" {};
+      }; # compilation opts }}} # fcp "${final.helix}/grammars.nix" {};
     in
       {
         "aarch64-darwin" =
@@ -658,75 +660,13 @@ final: _prev: {
           # (final.emacsPackagesFor (
           epkg.overrideAttrs (old: {
             __noChroot = true; # [INFO]: cannot access /etc/ssl/certs otherwise (Operation not permitted)
-            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [_prev.makeBinaryWrapper];
-            postInstall =
-              (old.postInstall or "")
-              + ''
-                emacs_version=$(ls "$out/share/emacs" | grep -E '^[0-9]' | sort -V | tail -1)
-                old_pdmp=$(find "$out/libexec/emacs/$emacs_version" -name 'emacs-*.pdmp' 2>/dev/null | head -1)
-                if [ -n "$old_pdmp" ]; then
-                  tmp_pdmp="$old_pdmp.tmp"
-                  eln_dir="$out/lib/emacs/$emacs_version/native-lisp"
-                  elisp_file=$(mktemp "$TMPDIR/emacs-redump-XXXXXX.el")
-                  cat > "$elisp_file" << ELISP
-                ; Fix pdmp-frozen variables that point to the build sandbox.
-                (when (boundp 'native-comp-eln-load-path)
-                  (setq native-comp-eln-load-path (list "$eln_dir/")))
-                (setq temporary-file-directory "/tmp/")
-                ; source-directory captures the unpacked build tree path. Emacs source
-                ; is not installed to the store, but $out is a better fallback than a
-                ; stale sandbox path — prevents "Listing directory failed" errors from
-                ; xref/find-function trying to scan the missing build dir.
-                (setq source-directory "$out/share/emacs/$emacs_version/src/")
-                ; package-directory-list is frozen in the pdmp at emacs-git build time
-                ; when no user packages are present. When this emacs is later used to
-                ; build elisp packages, EMACSLOADPATH adds deps to load-path but
-                ; package-directory-list (already bound → defcustom is a no-op) does
-                ; not include their elpa dirs, so package-activate-all cannot find deps.
-                ;
-                ; Fix: use with-eval-after-load so that AFTER package.el loads (triggered
-                ; by the -f package-activate-all autoload), we reset package-directory-list
-                ; from the current load-path (which includes EMACSLOADPATH additions) and
-                ; call package-initialize to populate package-alist.
-                ;
-                ; NOTE: advice-add before package.el loads is wiped when defun redefines
-                ; the symbol; with-eval-after-load ensures the hook runs after defun.
-                ; Gate on noninteractive: in interactive Emacs, package-activate-all is
-                ; called at startup which triggers this hook and resets package-alist,
-                ; breaking package activation (org-mode not rendering, treesit nil, etc.).
-                ; Only batch/build-time invocations need this fix.
-                (with-eval-after-load 'package
-                  (when noninteractive
-                    (setq package-directory-list
-                      (let (result)
-                        (dolist (f load-path)
-                          (and (stringp f)
-                               (equal (file-name-nondirectory f) "site-lisp")
-                               (push (expand-file-name "elpa" f) result)))
-                        (nreverse result)))
-                    (unless (bound-and-true-p package--initialized)
-                      (package-initialize t))))
-                ; Re-enable global minor modes that batch mode leaves disabled but
-                ; the original pdmp (built by loadup.el) had enabled. Without this,
-                ; interactive Emacs inherits the batch-mode nil state.
-                (global-font-lock-mode 1)
-                (transient-mark-mode 1)
-                (dump-emacs-portable "$tmp_pdmp")
-                ELISP
-                  EMACSDATA="$out/share/emacs/$emacs_version/etc" \
-                  EMACSLOADPATH="$out/share/emacs/$emacs_version/lisp:" \
-                    "$out/bin/emacs" \
-                      --dump-file "$old_pdmp" \
-                      --batch \
-                      --no-site-file \
-                      --load "$elisp_file" \
-                    && mv "$tmp_pdmp" "$old_pdmp" \
-                    || echo "Warning: emacs re-dump failed, continuing with original pdmp"
-                  rm -f "$elisp_file"
-                fi
-                wrapProgram "$out/bin/emacs" \
-                  --set-default EMACSDATA "$out/share/emacs/$emacs_version/etc"
-              '';
+            # preBuild = old.preBuild + ''
+            # '';
+            # nativeBuildInputs = with final;
+            #   [zig.cc-unwrapped]
+            #   ++ old.nativeBuildInputs or [];
+            # buildInputs = with final; old.buildInputs or [] ++ [apple-sdk_26];
+            # configureFlags = with final; old.configureFlags ++ ["CFLAGS=-F${apple-sdk_26.passthru.sdkroot}/System/Library/Frameworks"];
             patches =
               old.patches
               ++ [
@@ -752,36 +692,54 @@ final: _prev: {
                   url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/ac5d6b64dc2b3567f12145c687ee3febf9597ec8/patches/emacs-30/blur.patch";
                   sha256 = "sha256-X6ml5Gr5vUaQSb38H92lhK8X9D6oDL4bzmO1ujS74ws=";
                 })
-                # (final.writeText "interactive-ns_init_colors.patch" ''
-                #   Skip NS color initialization in batch mode (bug#80377 workaround)
-                #
-                #   Commit b7aca342e6 moved ns_init_colors() to main() in emacs.c before
-                #   init_lread().  At that point data-directory still holds the stale value
-                #   from the pdump (the build sandbox path) because init_lread() has not
-                #   recalculated it yet.  In Nix builds the sandbox path no longer exists,
-                #   so reading rgb.txt fails and kills the process.
-                #
-                #   Guard the call with !noninteractive so batch-mode byte-compilation
-                #   (used by Nix elisp package builds) skips color init entirely.
-                #
-                #   Trade-off: elisp running in --batch that queries X11 color names will
-                #   not have the full color list.  This is acceptable because batch mode
-                #   has no display and color queries are meaningless there.
-                #
-                #   diff --git a/src/emacs.c b/src/emacs.c
-                #   index 8e3d528dcea..01a971095bd 100644
-                #   --- a/src/emacs.c
-                #   +++ b/src/emacs.c
-                #   @@ -2066,7 +2066,7 @@ Using an Emacs configured with --with-x-toolkit=lucid does not have this problem
-                #
-                #    #ifdef HAVE_NS
-                #      /* For early calls to ns_lisp_to_color or Fns_list_colors.  */
-                #   -  if (!dump_mode)
-                #   +  if (!dump_mode && !noninteractive)
-                #        ns_init_colors ();
-                #
-                #      if (!noninteractive)
-                # '')
+                (final.writeText "interactive-ns_init_colors.patch" ''
+                  >From a16ca33954c7c69b23176ff15db4c01d48ec92ac Mon Sep 17 00:00:00 2001
+                  From: Zeke Dou <zeke@zekedou.live>
+                  Date: Sun, 5 Apr 2026 15:16:53 +0200
+                  Subject: [PATCH] Move call to ns_init_colors() after init_callproc()
+
+                  'ns_init_colors()' calls 'fatal()' when it cannot read 'etc/rgb.txt'.
+                  This was triggered while building Emacs packages under Nix.
+
+                  * src/emacs.c (main): Move the 'ns_init_colors()' call to the location
+                  after 'init_callproc()', where 'data-directory' is guaranteed to be
+                  valid.
+                  ---
+                   src/emacs.c | 11 +++++++----
+                   1 file changed, 7 insertions(+), 4 deletions(-)
+
+                  diff --git a/src/emacs.c b/src/emacs.c
+                  index 23e0c6f5318..18bd4902ae8 100644
+                  --- a/src/emacs.c
+                  +++ b/src/emacs.c
+                  @@ -2050,10 +2050,6 @@ android_emacs_init (int argc, char **argv, char *dump_file)
+                   #endif
+
+                   #ifdef HAVE_NS
+                  -  /* For early calls to ns_lisp_to_color or Fns_list_colors.  */
+                  -  if (!dump_mode)
+                  -    ns_init_colors ();
+                  -
+                     if (!noninteractive)
+                       {
+                   #ifdef NS_IMPL_COCOA
+                  @@ -2293,6 +2289,13 @@ android_emacs_init (int argc, char **argv, char *dump_file)
+                     check_windows_init_file ();
+                   #endif
+
+                  +#ifdef HAVE_NS
+                  +  /* For early calls to ns_lisp_to_color or Fns_list_colors.
+                  +     Must follow init_callproc which sets data-directory.  */
+                  +  if (!dump_mode)
+                  +    ns_init_colors ();
+                  +#endif
+                  +
+                     /* Intern the names of all standard functions and variables;
+                        define standard keys.  */
+
+                  --
+                  2.51.2
+                '')
               ];
           })
           # )).emacsWithPackages
@@ -791,6 +749,17 @@ final: _prev: {
           with epkgs; [
             treesit-grammars.with-all-grammars
           ]);
-      }."${final.stdenv.hostPlatform.system}";
+      }."${final.stdenv.hostPlatform.system}"
+      .override (old: {
+        # stdenv = final.zig.stdenv;
+        # old.stdenv.override {
+        #   cc = final.zig.cc;
+        #   bintools = final.zig.bintools;
+        # };
+        # (
+        #   final.overrideCC old.stdenv
+        #   final.zig.cc
+        # );
+      });
   };
 }

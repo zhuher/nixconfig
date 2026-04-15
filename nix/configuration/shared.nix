@@ -12,7 +12,94 @@
   env = config.environment.variables;
   shells = with pkgs; [nushell zsh fish];
 in {
-  # xSB {{{
+  nixpkgs.overlays = [
+    (final: prev:
+      with final; {
+        # jujutsu-wrapped {{{
+        jujutsu-wrapped = let
+          # config {{{
+          jjconf = (formats.toml {}).generate "jj.toml" {
+            colors."commit_id prefix".bold = true;
+            revsets.log = ''@ | ancestors(immutable_heads()..) | trunk()'';
+            template-aliases = {
+              "format_short_id(id)" = "id.shortest()";
+              "format_timestamp(timestamp)" = ''timestamp ++ "(" ++ timestamp.ago() ++ ")"'';
+            };
+            ui = {
+              default_command = ["log" "--no-pager" "--limit=6"];
+              diff-editor = ["${lib.getExe' pkgs.nvim-wrapped "nvim"}" "-c" "DiffEditor $left $right $output"];
+              pager = "${lib.getExe delta}";
+              diff-formatter = ":git";
+            };
+            templates = {
+              log_node = ''
+                coalesce(
+                  if(!self, "🮀"),
+                  if(current_working_copy, "@"),
+                  if(root, "┴"),
+                  if(immutable, "●", "○"),
+                )'';
+            };
+            op_log_node = ''if(current_operation, "@", "○")'';
+            snapshot.max-new-file-size = 16777216;
+            aliases = {
+              my-inline-script = [
+                "util"
+                "exec"
+                "--"
+                "bash"
+                "-c"
+                ''
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+                  echo "Look Ma, everything in one file!"
+                  echo "args: $@"
+                ''
+                ""
+              ];
+              yolo = [
+                "util"
+                "exec"
+                "--"
+                "bash"
+                "-c"
+                ''
+                  jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
+                ''
+                ""
+              ];
+              pull-subs = [
+                "util"
+                "exec"
+                "--"
+                "bash"
+                "-c"
+                ''
+                  git submodule update --recursive --init
+                ''
+                ""
+              ];
+            };
+          };
+          # config }}}
+        in
+          symlinkJoin {
+            name = "jujutsu-wrapped";
+            paths = [jujutsu];
+            nativeBuildInputs = [makeBinaryWrapper];
+            postBuild = ''
+              wrapProgram $out/bin/jj \
+              --prefix PATH : ${final.lib.makeBinPath (with final; [delta nvim-wrapped])} \
+              --prefix JJ_CONFIG : "${jjconf}" ${
+                lib.optionalString
+                config.zhuk.jj.secrets
+                ''--prefix JJ_CONFIG : "${config.sops.secrets.jjsecrets.path}"''
+              }
+            '';
+          };
+        # jujutsu-wrapped }}}
+      })
+  ];
   imports = [
     ./${
       if isDarwin
@@ -20,7 +107,9 @@ in {
       else "nixos"
     }.nix
     ./lix.nix
+    ./options.nix
   ];
+  # xSB {{{
   programs.xstarbound = {
     enable = lib.mkDefault true;
     # package = let
@@ -60,7 +149,6 @@ in {
     direnv = {
       enable = true;
       nix-direnv.enable = true;
-      nix-direnv.package = pkgs.lixPackageSets.latest.nix-direnv;
       settings = {
         global = {
           warn_timeout = "30s";
@@ -92,17 +180,12 @@ in {
       auto-optimise-store = false;
       cores = 0;
       sandbox = lib.mkDefault true; # [INFO]: "relaxed" or bool;
-      extra-sandbox-paths = ["/usr/bin/strip" "/usr/bin/codesign"];
       extra-substituters = [
-        "https://cache.nixos.org"
         "https://nix-community.cachix.org"
-        # "https://cache.garnix.io"
       ];
       extra-trusted-public-keys = [
         "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        # "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       ];
       trusted-users = [
         "@admin"
@@ -111,6 +194,7 @@ in {
       extra-experimental-features = ["nix-command" "flakes"];
       keep-outputs = true;
       keep-derivations = true;
+      # extra-deprecated-features = ["broken-string-indentation" "or-as-identifier"];
     };
     channel.enable = false;
   };
@@ -152,66 +236,20 @@ in {
         getip() { ip r | grep 'link src' | awk '{ print $9 }' }
       '';
     interactiveShellInit = ''
-      eval "$(${getExe' coreutils "dircolors"})"
-      HELPLDIR="${pkgs.zsh}/share/zsh/$ZSH_VERSION/help"
-      path+="${pkgs.zsh-fzf-tab}/share/fzf-tab"
-      fpath+="${pkgs.zsh-fzf-tab}/share/fzf-tab"
-      fpath+="${env.NH_FLAKE}/configs/zsh/comp"
-
-      autoload -Uz compinit
-      mkdir -p ${env.XDG_CACHE_HOME}/zsh
-      source "${env.NH_FLAKE}/configs/zsh/comp.zsh"
-
-      if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
-        autoload -Uz -- "$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
-        ghostty-integration
-        unfunction ghostty-integration
-      fi
-      fpath+="${pkgs.zig-shell-completions}/share/zsh/site-functions"
-
-      if [[ -n ${env.XDG_CACHE_HOME}/zsh/zcompdump-$ZSH_VERSION(#qN.mh+24) ]]; then
-        compinit -d "${env.XDG_CACHE_HOME}/zsh/zcompdump-$ZSH_VERSION"
-      else
-        compinit -C
-      fi
-
-      eval "$(${getExe zoxide} init zsh)"
-      ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8,underline"
-      ZSH_AUTOSUGGEST_STRATEGY=(history)
-
-      source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
-
-      source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-      source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-
-      setopt nullglob
-      source "${env.NH_FLAKE}/configs/zsh/rc.zsh"
-
-      HISTSIZE=9999999999
-      HISTFILE="${env.ZDOTDIR}/hist"
-      SAVEHIST=9999999999
-      mkdir -p "$(dirname "$HISTFILE")"
-      chmod 600 "$HISTFILE"
-
-      setopt HIST_FCNTL_LOCK APPEND_HISTORY HIST_IGNORE_DUPS
-      unsetopt HIST_IGNORE_ALL_DUPS HIST_SAVE_NO_DUPS HIST_FIND_NO_DUPS
-      setopt HIST_IGNORE_SPACE HIST_EXPIRE_DUPS_FIRST SHARE_HISTORY EXTENDED_HISTORY
-
-      if [[ $options[zle] = on ]]; then
-        source <(${getExe fzf} --zsh)
-      fi
-
-      source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-      bindkey "^[[A" history-substring-search-up
-      bindkey "^[[B" history-substring-search-down
-      ${lib.optionalString false ''[[ $TERM != "dumb" ]] && exec ${getExe pkgs.nushell}''}
-      ed() { pushd "$(${getExe zoxide} query $1)"; $EDITOR; popd }
+      export DIRCOLORS_EXE="${getExe' coreutils "dircolors"}"
+      export ZSH_DIR="${pkgs.zsh}"
+      export ZSH_FZF_TAB_DIR="${pkgs.zsh-fzf-tab}"
+      export ZIG_SHELL_COMPLETIONS_DIR="${pkgs.zig-shell-completions}"
+      export ZOXIDE_EXE="${getExe zoxide}"
+      export ZSH_AUTOSUGGESTIONS_DIR="${pkgs.zsh-autosuggestions}"
+      export ZSH_FAST_SYNTAX_HIGHLIGHTING_DIR="${pkgs.zsh-fast-syntax-highlighting}"
+      export ZSH_HISTORY_SUBSTRING_SEARCH_DIR="${pkgs.zsh-history-substring-search}"
+      export FZF_EXE="${getExe fzf}"
+      [[ "$USER" == "${currentSystemUser}" ]] && { source "$NH_FLAKE/configs/zsh/rc.zsh"; source ${pkgs.grc + "/etc/grc.zsh"} }
       ${lib.optionalString isWSL ''
         macgame2dir() { ${getExe steamcmd} +force_install_dir "$2" +@sSteamCmdForcePlatformType macos +login mrtoster007 +app_update "$1" +quit }
         bg2dir() { macgame2dir 1086940 "$1" }
       ''}
-      [[ -s "${pkgs.grc}/etc/grc.zsh" ]] && source ${pkgs.grc}/etc/grc.zsh
     '';
   };
   # zsh }}}
@@ -266,6 +304,7 @@ in {
       # gnupg-wrapped }}}
     in
       [
+        jujutsu-wrapped
         zig
         zls
         (zen-browser.override
@@ -452,7 +491,7 @@ in {
         jq
         just
         nh
-        nil
+        lpkgs.nil
         nvim-wrapped
         ripgrep
         rsync
@@ -503,21 +542,13 @@ in {
     variables =
       # {{{
       let
-        manpager = pkgs.writeShellScriptBin "manpager" (
-          if isDarwin
-          then ''
-            sh -c 'sed -u -e "s/\\x1B\[[0-9;]*m//g; s/.\\x08//g" | bat -p -lman'
-          ''
-          else ''
-            cat "$1" | col -bx | bat --language man --style plain
-          ''
-        );
         flake-path = builtins.readFile inputs.flake-path.outPath;
+        nvimexe = getExe' pkgs.nvim-wrapped "nvim";
       in rec {
-        NIXPKGS_REV = "9cf7092bdd603554bd8b63c216e8943cf9b12512";
+        NIXPKGS_REV = "e75f25705c2934955ee5075e62530d74aca973c6";
         PAGER = "${pkgs.delta}/bin/delta";
-        MANPAGER = "${manpager}/bin/manpager";
-        EDITOR = getExe' pkgs.nvim-wrapped "nvim";
+        MANPAGER = "${nvimexe} +Man!";
+        EDITOR = nvimexe;
         LANG = "C.UTF-8";
         HOME = config.users.users."${currentSystemUser}".home;
         XDG_CACHE_HOME = "${HOME}/.cache";

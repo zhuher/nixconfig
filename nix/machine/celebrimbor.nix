@@ -2,127 +2,137 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }: {
-  # 💿 Disko Configuration
-  disko.devices = {
-    disk = {
-      main = {
-        type = "disk";
-        device = "/dev/nvme0n1";
-        content = {
-          type = "gpt";
-          efiGptPartitionFirst = false;
-          partitions = {
-            # 1. Microsoft Reserved (p1)
-            msr = {
-              priority = 1;
-              start = "103424K";
-              size = "16384K";
-              type = "0C01";
-            };
+  imports = [
+    inputs.disko.nixosModules.default
+    inputs.apollo.nixosModules.default
+    ./celebrimbor/disko.nix
+    ../module/steam.nix
+  ];
+  environment.systemPackages = with pkgs; [efibootmgr ghostty];
+  system = {
+    stateVersion = "26.05";
+  };
+  networking = {
+    interfaces = {
+      enp34s0 = {
+        wakeOnLan = {
+          enable = true;
+          policy = ["magic"];
+        };
+      };
+    };
+    firewall = {
+      allowedUDPPorts = [9];
+    };
+  };
+  boot = {
+    loader = {
+      grub = {
+        enable = false;
+      };
+      systemd-boot.enable = false;
+      timeout = 5;
+      # 🚀 Bootloader Configuration
+      efi.canTouchEfiVariables = true;
+      efi.efiSysMountPoint = "/boot";
+      limine = {
+        enable = true;
+        efiSupport = true;
+        resolution = "1920x1080x32";
+        maxGenerations = 10;
+        enableEditor = false;
+        extraConfig = ''
+          timeout: 0
+        '';
+        extraEntries = ''
+          /Windows
+              protocol: efi
+              path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
+        '';
+      };
+    };
 
-            # 2. Windows Basic Data (p2)
-            windows = {
-              priority = 2;
-              device = "/dev/nvme0n1p2";
-              start = "119808K";
-              size = "208965632K";
-              type = "0700"; #gdisk
-              content = {
-                type = "filesystem";
-                format = "ntfs"; # Mounts Windows C: drive
-                mountpoint = "/windows";
-                mountOptions = ["ro" "nofail"]; # Read-only for safety
-              };
-            };
+    kernelModules = [
+      "ahci" # Advanced Host Controller Interface for SATA devices
+      "xhci_pci" # USB 3.0
+      "failover" # Base failover functionality
+      "net_failover" # Network failover capability
+      "nvme"
+      "usb_storage"
+      "xhci_pci"
+    ];
+    kernelParams = [
+      "ahci.mobile_lpm_policy=1" # no power management for SATA: LPM support broken, forcing max_power
+    ];
 
-            # 3. Windows Recovery (p3)
-            recovery = {
-              priority = 3;
-              device = "/dev/nvme0n1p3";
-              start = "209085440K";
-              size = "748544K";
-              type = "2700"; #gdisk
-              content = {
-                type = "filesystem";
-                format = "ntfs";
-                mountpoint = "/winre";
-                mountOptions = ["ro" "nofail"];
-              };
-            };
-
-            # 4. EFI System Partition (p4)
-            ESP = {
-              priority = 4;
-              device = "/dev/nvme0n1p4";
-              start = "209833984K";
-              size = "1024000K";
-              type = "EF00"; #gdisk
-              content = {
-                type = "filesystem";
-                format = "vfat";
-                mountpoint = "/boot";
-              };
-            };
-
-            # 5. NixOS LUKS + Btrfs
-            nixos = {
-              priority = 5;
-              start = "210857984K";
-              size = "100%";
-              content = {
-                type = "luks";
-                name = "crypted";
-                settings.allowDiscards = true; # Optimized for Samsung NVMe
-                content = {
-                  type = "btrfs";
-                  extraArgs = ["-f"];
-                  subvolumes = {
-                    "/root" = {
-                      mountpoint = "/";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/home" = {
-                      mountpoint = "/home";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/nix" = {
-                      mountpoint = "/nix";
-                      mountOptions = ["compress=zstd" "noatime"];
-                    };
-                    "/swap" = {
-                      mountpoint = "/.swapvol";
-                      swap.swapfile.size = "8G";
-                    };
-                  };
-                };
-              };
-            };
-          };
+    # kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+    kernelPackages = pkgs.linuxPackages_latest;
+    initrd = {
+      enable = true;
+      availableKernelModules = ["r8169"];
+      network = {
+        enable = true;
+        flushBeforeStage2 = true;
+        ssh = {
+          enable = true;
+          port = 2222;
+          authorizedKeys = config.users.users.root.openssh.authorizedKeys.keys;
+          hostKeys = ["/boot/initrd_ssh_host_ed25519_key"];
+        };
+      };
+      # NEW: use systemd-networkd in initrd (instead of udhcpc)
+      # The exact option names can vary a bit by nixpkgs revision, but the idea is:
+      # - enable networkd in initrd
+      # - add a .network that enables DHCP on your NIC
+      systemd.network = {
+        enable = true;
+        networks."10-wan" = {
+          matchConfig.Name = "en* eth*"; # or set the exact name, e.g. "enp3s0"
+          networkConfig.DHCP = "yes";
+          # optionally:
+          # networkConfig.IPv6AcceptRA = true;
+          # dhcpV4Config.UseDomains = true;
         };
       };
     };
   };
-
-  # 🚀 Bootloader Configuration
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot";
-  boot.loader.systemd-boot.configurationLimit = 10;
-
-  # Samsung 970 EVO Plus & Kernel Optimizations
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "usb_storage" "sd_mod"];
+  systemd.services.initrd-luks-profile = {
+    description = "Initrd helper to add cryptsetup-askpass to root profile";
+    wantedBy = ["initrd.target"];
+    before = ["initrd.target"];
+    after = ["systemd-tmpfiles-setup.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      echo 'cryptsetup-askpass' >> /root/.profile
+      echo 'exit' >> /root/.profile
+    '';
+  };
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
-  # 🛠️ System Maintenance
-  services.fstrim.enable = true; # SSD Trim for Samsung 970
-  services.btrfs.autoScrub = {
-    enable = true;
-    interval = "weekly";
-    fileSystems = ["/"];
+  hardware = {
+    enableRedistributableFirmware = true;
+    cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  };
+  specialisation.sway.configuration = {
+    environment.etc."specialisation".text = config.zhuk.__spec; # for nh
+    imports = [
+      ../module/sway.nix
+    ];
+  };
+  services = {
+    fstrim.enable = true;
+    btrfs.autoScrub = {
+      enable = true;
+      interval = "weekly";
+      fileSystems = ["/"];
+    };
   };
   programs.xstarbound.enable = false;
+  zhuk.git.secrets = false;
+  zhuk.jj.secrets = false;
 }

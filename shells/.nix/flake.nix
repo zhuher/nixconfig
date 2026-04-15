@@ -1,6 +1,6 @@
 {
   description = "We do da config flake with this one";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/e75f25705c2934955ee5075e62530d74aca973c6";
   outputs = {nixpkgs, ...} @ inputs: let
     supportedSystems = [
       "x86_64-linux"

@@ -1,6 +1,9 @@
 {
   currentSystemUser,
+  config,
+  inputs,
   pkgs,
+  lib,
   ...
 }: let
   keys = [
@@ -8,12 +11,24 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHQ9MGKngwot96l+oEd7B3IF8db64kwWTjx1R/85ORs6"
   ];
 in {
+  imports = [
+    inputs.sops-nix.nixosModules.sops
+    inputs.nix-index-database.nixosModules.nix-index
+    inputs.home-manager.nixosModules.home-manager
+    ../module/nvidia.nix
+  ];
   programs.nh = {
     enable = true;
     package = pkgs.nh;
   };
   environment = {
+    enableAllTerminfo = true;
+    systemPackages = with pkgs; [
+    ];
     localBinInPath = true;
+    variables = {
+      XDG_RUNTIME_DUR = "/var/run/user/${builtins.toString config.users.users.${currentSystemUser}.uid}";
+    };
   };
   documentation = {
     dev.enable = true;
@@ -22,6 +37,7 @@ in {
   services = {
     openssh = {
       enable = true;
+      ports = [23];
       settings = {
         PermitRootLogin = "prohibit-password";
         PasswordAuthentication = false;
@@ -37,15 +53,17 @@ in {
       home = "/home/${currentSystemUser}";
       extraGroups = [
         "wheel"
+        "input"
+        "video"
       ];
-      initialHashedPassword = "$y$j9T$xye5QhLru1t0MXOaUZeFo.$lxYiEA6esvOlkuCM8TqS9RbTQChgGjD9eeeVXv4kZnD";
+      initialHashedPassword = lib.mkDefault "$y$j9T$xye5QhLru1t0MXOaUZeFo.$lxYiEA6esvOlkuCM8TqS9RbTQChgGjD9eeeVXv4kZnD";
       openssh.authorizedKeys.keys = keys;
       linger = true; # run user's units independent of login
     };
     root = {
       extraGroups = [
       ];
-      initialHashedPassword = "$y$j9T$acCG2bQZowJTAN5su9oOL1$0dJ4ZYLnYiKegKyGe9a9wNbICQUa3w3mQTWw2W4a9Q0";
+      initialHashedPassword = lib.mkDefault "$y$j9T$acCG2bQZowJTAN5su9oOL1$0dJ4ZYLnYiKegKyGe9a9wNbICQUa3w3mQTWw2W4a9Q0";
       openssh.authorizedKeys.keys = keys;
     };
   };
@@ -67,5 +85,8 @@ in {
       LC_ALL = "C.UTF-8";
     };
   };
-  security.audit.enable = true;
+  security.audit = {
+    backlogLimit = 8192;
+    enable = true;
+  };
 }

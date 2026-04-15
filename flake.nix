@@ -1,6 +1,10 @@
 {
   description = "LMAO TOP TEXT";
   inputs = {
+    apollo = {
+      url = "github:zhuher/le-apollo-flake-fork";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -10,7 +14,7 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
+    nixpkgs.url = "github:nixos/nixpkgs/e75f25705c2934955ee5075e62530d74aca973c6";
     nixos-wsl = {
       # Build a custom WSL installer
       url = "github:nix-community/NixOS-WSL"; # "/bc827c2924c46f2344d3168fd82c6711aaceb610"; # next commit broke mount root regex check
@@ -80,6 +84,7 @@
       (final: _prev: {
         zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.twilight-unwrapped;
       })
+      inputs.apollo.overlays.default
       inputs.emacs-overlay.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       inputs.sops-nix.overlays.default
@@ -119,19 +124,7 @@
           ./nix/configuration/shared.nix
           ./nix/machine/${name}.nix
           ./nix/home/shared.nix
-          inputs.sops-nix."${
-            if isDarwin
-            then "darwin"
-            else "nixos"
-          }Modules".sops
-          inputs.disko.nixosModules.default
-          inputs.home-manager.darwinModules.home-manager
           inputs.xsb.nixosModules.default
-          inputs.nix-index-database."${
-            if isDarwin
-            then "darwin"
-            else "nixos"
-          }Modules".nix-index
           {
             config._module.args = {
               currentSystem = system;
@@ -200,7 +193,6 @@
       celebrimbor = mkSystem "celebrimbor" {
         system = "x86_64-linux";
         user = "zhuher";
-        isWSL = false;
       };
       wsl = mkSystem "wsl" {
         system = "x86_64-linux";

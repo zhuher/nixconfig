@@ -18,87 +18,7 @@ in {
       SCCACHE_DIR = "${config.users.users."${currentSystemUser}".home}/.cache/sccache";
       SCCACHE_CACHE_SIZE = "100G";
     };
-    systemPackages = with pkgs; let
-      # jujutsu-wrapped {{{
-      jujutsu-wrapped = let
-        # config {{{
-        jjconf = (formats.toml {}).generate "jj.toml" {
-          colors."commit_id prefix".bold = true;
-          revsets.log = ''@ | ancestors(immutable_heads()..) | trunk()'';
-          template-aliases = {
-            "format_short_id(id)" = "id.shortest()";
-            "format_timestamp(timestamp)" = ''timestamp ++ "(" ++ timestamp.ago() ++ ")"'';
-          };
-          ui = {
-            default_command = ["log" "--no-pager" "--limit=6"];
-            diff-editor = ["${lib.getExe' pkgs.nvim-wrapped "nvim"}" "-c" "DiffEditor $left $right $output"];
-            pager = "${lib.getExe delta}";
-            diff-formatter = ":git";
-          };
-          templates = {
-            log_node = ''
-              coalesce(
-                if(!self, "🮀"),
-                if(current_working_copy, "@"),
-                if(root, "┴"),
-                if(immutable, "●", "○"),
-              )'';
-          };
-          op_log_node = ''if(current_operation, "@", "○")'';
-          snapshot.max-new-file-size = 16777216;
-          aliases = {
-            my-inline-script = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                #!/usr/bin/env bash
-                set -euo pipefail
-                echo "Look Ma, everything in one file!"
-                echo "args: $@"
-              ''
-              ""
-            ];
-            yolo = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
-              ''
-              ""
-            ];
-            pull-subs = [
-              "util"
-              "exec"
-              "--"
-              "bash"
-              "-c"
-              ''
-                git submodule update --init
-              ''
-              ""
-            ];
-          };
-        };
-        # config }}}
-      in
-        symlinkJoin {
-          name = "jujutsu-wrapped";
-          paths = [jujutsu];
-          nativeBuildInputs = [makeBinaryWrapper];
-          buildInputs = [delta pkgs.nvim-wrapped];
-          postBuild = ''
-            wrapProgram $out/bin/jj \
-            --set JJ_CONFIG "${"${jjconf}:${config.sops.secrets.jjsecrets.path}"}"
-          '';
-        };
-      # jujutsu-wrapped }}}
-    in [
+    systemPackages = with pkgs; [
       (writeZig zig "hello-zig" ''
         const std = @import("std");
         pub fn main() void {
@@ -106,7 +26,7 @@ in {
         }
       '' "-O ReleaseSafe")
       sccache
-      zhuk.emacs # FIXME cannot read a hardcoded rgb.txt from build directory
+      # zhuk.emacs # FIXME cannot read a hardcoded rgb.txt from build directory
       jujutsu-wrapped
     ];
   };

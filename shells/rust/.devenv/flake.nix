@@ -1,7 +1,7 @@
 {
   description = "A Nix-flake-based Rust development environment";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
+    nixpkgs.url = "github:nixos/nixpkgs/e75f25705c2934955ee5075e62530d74aca973c6";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -48,7 +48,7 @@
         default = pkgs.mkShellNoCC {
           shellHook = ''
             export CARGO_HOME="$(pwd)/.direnv/cago" # crico y estriper...
-            export SHELL_PKGS_REV=9cf7092bdd603554bd8b63c216e8943cf9b12512
+            export SHELL_PKGS_REV=e75f25705c2934955ee5075e62530d74aca973c6
           '';
           packages = with pkgs; [
             git

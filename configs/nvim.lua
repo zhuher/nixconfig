@@ -1136,7 +1136,7 @@ require("lazy").setup(
     lualine,
     neotree,
     noice,
-    nvim_ufo,
+    -- nvim_ufo,
     precognition,
     -- rustaceanvim,
     treesitter,

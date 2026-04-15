@@ -1,7 +1,7 @@
 {
   description = "A Nix-flake-based Zig development environment";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/9cf7092bdd603554bd8b63c216e8943cf9b12512";
+    nixpkgs.url = "github:nixos/nixpkgs/e75f25705c2934955ee5075e62530d74aca973c6";
   };
   outputs = {nixpkgs, ...} @ inputs: let
     supportedSystems = [
@@ -26,7 +26,7 @@
         default = pkgs.mkShellNoCC {
           shellHook = ''
             export ZIG_GLOBAL_CACHE_DIR="$(pwd)/.direnv/zig-cache"
-            export SHELL_PKGS_REV=9cf7092bdd603554bd8b63c216e8943cf9b12512
+            export SHELL_PKGS_REV=e75f25705c2934955ee5075e62530d74aca973c6
           '';
           packages = with pkgs; [
             git

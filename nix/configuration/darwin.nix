@@ -9,8 +9,12 @@
 : let
   env = config.environment.variables;
 in {
+  zhuk.lixVer = "latest";
   imports = [
     # nix-homebrew {{{
+    inputs.sops-nix.darwinModules.sops
+    inputs.nix-index-database.darwinModules.nix-index
+    inputs.home-manager.darwinModules.home-manager
     inputs.nix-homebrew.darwinModules.nix-homebrew
     {
       nix-homebrew = {
@@ -398,6 +402,7 @@ in {
       automatic = false;
     };
     settings = {
+      extra-sandbox-paths = ["/usr/bin/strip" "/usr/bin/codesign"];
       allowed-impure-host-deps = ["/bin/sh" "/usr/lib/libSystem.B.dylib" "/usr/lib/system/libunc.dylib" "/dev/zero" "/dev/random" "/dev/urandom"];
     };
     gc.automatic = false;
