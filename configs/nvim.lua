@@ -1140,7 +1140,7 @@ require("lazy").setup(
     precognition,
     -- rustaceanvim,
     treesitter,
-    vcsigns,
+    -- vcsigns,
     vim_dim,
     which_key,
   },

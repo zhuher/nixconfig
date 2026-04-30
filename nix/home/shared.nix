@@ -44,13 +44,13 @@
               root = "rev-parse --show-toplevel";
             };
             http.postBuffer = 157286400;
-            branch.autosetuprebase = "always";
+            # branch.autosetuprebase = "always";
             color.ui = true;
             core.askPass = ""; # [INFO]: needs to be empty to use terminal for ask pass
             core.pager = delta;
             credential.helper = "store"; # [TODO]: make this more secure
             github.user = currentSystemUser;
-            push.default = "tracking";
+            # push.default = "upstream";
             init.defaultBranch = "main";
             interactive.diffFilter = "${delta} --color-only";
             pull.rebase = true;
@@ -60,7 +60,7 @@
               features = "decorations";
               line-numbers = true;
               side-by-side = true;
-              syntax-theme = "base16";
+              # syntax-theme = "ansi";
               keep-plus-minus-markers = true;
               decorations = {
                 commit-decoration-style = "blue ol";
