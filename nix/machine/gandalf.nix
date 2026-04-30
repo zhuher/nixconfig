@@ -40,9 +40,6 @@ in {
     ];
   };
   users.users.${currentSystemUser}.openssh = {
-    extraConfig = ''
-      PermitTunnel yes
-    '';
     authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHQ9MGKngwot96l+oEd7B3IF8db64kwWTjx1R/85ORs6"
     ];

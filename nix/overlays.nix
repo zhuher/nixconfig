@@ -229,7 +229,7 @@ in {
         inherit pname version;
         src = fetchurl {
           url = "https://github.com/ghostty-org/ghostty/releases/download/${version}/Ghostty.dmg";
-          sha256 = "sha256-nfp+j/cmDcAyqtVnYpmo0uQp5A6lQlvsUXB+r4HukT8=";
+          sha256 = "sha256-UOgWBYHIhHHBzbKruTMYnGapp254ztO3lfC61JoLEIg=";
         };
 
         outputs = [
@@ -339,14 +339,14 @@ in {
       gnutar,
     }: let
       pname = "monero-cli";
-      version = "0.18.4.2";
+      version = "0.18.4.6";
     in
       stdenv.mkDerivation {
         inherit pname version;
 
         src = fetchurl {
           url = "https://downloads.getmonero.org/cli/monero-mac-armv8-v${version}.tar.bz2";
-          sha256 = "sha256-m5jaaRG0dpq+8inCDiHynZGbEdsVaWXW8TnS4a1mJcI=";
+          sha256 = "sha256-xx9SYBIhHrg9cgDMByw+Td/2N3hqnS7iZxZavdaupUE=";
         };
 
         nativeBuildInputs = [gnutar];
