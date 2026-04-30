@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   isDarwin,
   isWSL,
@@ -30,13 +29,10 @@
       default = !(isDarwin || isWSL);
       description = ''Whether to set up the system to use an nvidia gpu'';
     };
-    __spec = let
-      specName = builtins.head (builtins.attrNames (config.specialisation or {none = 1;}));
-    in
-      mkOption {
-        type = types.str;
-        default = builtins.trace specName specName;
-        description = ''The specialisation in use. For debugging only.'';
-      };
+    _spec = mkOption {
+      type = types.str;
+      default = "Default";
+      description = ''Used specialisation'';
+    };
   };
 }

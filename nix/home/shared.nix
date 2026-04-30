@@ -19,19 +19,58 @@
         else ".config";
     in {
       xdg.configFile = {
-        # {{{
-        # nushell {{{
-        "nushell" = {
-          source = mkLk "${env.HOME}/${LAPS}/nushell";
-          recursive = true;
-        };
-        # nushell }}}
+        "nushell/autoload/mutable.nu".source = mkLk "${env.NH_FLAKE}/configs/nu/mutable.nu";
+        "nushell/autoload/deosb.nu".source = mkLk "${env.NH_FLAKE}/configs/nu/deosb.nu";
+        "nushell/env.nu".text = ''
+          const zhukcfg = $nu.default-config-dir
+          # zoxide
+          if (not ($"($zhukcfg)/zoxide.nu" | path exists)) {
+            ${getExe pkgs.zoxide} init nushell | save --force $"($zhukcfg)/zoxide.nu"
+          } '';
+        "nushell/config.nu".text = ''
+          def prepath [path: string] {
+            $env.PATH | split row (char esep) | where { $in != $path} | prepend $path
+          }
+          $env.PATH = prepath "/opt/homebrew/bin"
+          $env.PATH = prepath "/opt/homebrew/sbin"
+          $env.PATH = prepath "/Users/${currentSystemUser}/.nix-profile/bin"
+          $env.PATH = prepath "/etc/profiles/per-user/${currentSystemUser}/bin"
+          $env.PATH = prepath "/nix/var/nix/profiles/default/bin"
+          $env.PATH = prepath "/run/current-system/sw/bin"
+          ${getExe' pkgs.coreutils "dircolors"} --c-shell | parse "setenv {key} {val}" | transpose -rd | load-env
+          $env.NH_FLAKE = "${env.NH_FLAKE}"
+          $env.NIXPKGS_REV = "${env.NIXPKGS_REV}"
+          if (not ($"($zhukcfg)/autoload" | path exists)) { mkdir $"($zhukcfg)/autoload" }
+          # carapace
+          $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
+          if (not ($"($zhukcfg)/autoload/carapace.nu" | path exists)) {
+            ${getExe pkgs.carapace} _carapace nushell | save --force $"($zhukcfg)/autoload/carapace.nu"
+          }
+          source $"($zhukcfg)/zoxide.nu"
+          # https://github.com/bydmiller/nixos-configs/blob/6a7053f1e081c21cf4362724b57d3d70e63198ed/machines/nebula/homes/zsh/aliases.nix#L63-L64
+          alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short
+          alias canihazip4 = ${dig} @resolver4.opendns.com myip.opendns.com +short -4
+          ${lib.optionalString isDarwin ''
+            alias nu-open = open
+            alias open = ^open
+          ''}
+          use std/config *
+          # Initialize the PWD hook as an empty list if it doesn't exist
+          $env.config.hooks.env_change.PWD = $env.config.hooks.env_change.PWD? | default []
+          $env.config.hooks.env_change.PWD ++= [{||
+            if (which direnv | is-empty) {
+              # If direnv isn't installed, do nothing
+              return
+            }
+            direnv export json | from json | default {} | load-env
+            # If direnv changes the PATH, it will become a string and we need to re-convert it to a list
+            $env.PATH = do (env-conversions).path.from_string $env.PATH
+          }]
+        '';
+        "ghostty/config".source = mkLk "${env.NH_FLAKE}/configs/ghostty";
         "sway/config".source = mkLk "${env.NH_FLAKE}/configs/sway";
-        # emacs {{{
         # "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
         # "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
-        # emacs }}}
-        # git {{{
         "git/ignore".text = ''
           .DS_Store
         '';
@@ -75,75 +114,18 @@
           }
           // lib.optionalAttrs config.zhuk.git.secrets {
             include.path = config.sops.secrets.gitsecrets.path;
-          }); # git }}}
+          });
       };
-      # }}}
       home = {
         stateVersion = "25.11";
         file =
           {
-            # {{{
             ".bashrc".text = ''
               if [ -n "$GHOSTTY_RESOURCES_DIR" ]; then
                 builtin source "''${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
               fi
-            ''; # }}}
-            # nushell {{{
-            "${LAPS}/nushell/autoload/mutable.nu".source = mkLk "${env.NH_FLAKE}/configs/nu/mutable.nu";
-            "${LAPS}/nushell/autoload/deosb.nu".source = mkLk "${env.NH_FLAKE}/configs/nu/deosb.nu";
-            "${LAPS}/nushell/env.nu".text = ''
-              const zhukcfg = $nu.default-config-dir
-              # zoxide
-              if (not ($"($zhukcfg)/zoxide.nu" | path exists)) {
-                ${getExe pkgs.zoxide} init nushell | save --force $"($zhukcfg)/zoxide.nu"
-              } '';
-            "${LAPS}/nushell/config.nu".text = ''
-              def prepath [path: string] {
-                $env.PATH | split row (char esep) | where { $in != $path} | prepend $path
-              }
-              $env.PATH = prepath "/opt/homebrew/bin"
-              $env.PATH = prepath "/opt/homebrew/sbin"
-              $env.PATH = prepath "/Users/${currentSystemUser}/.nix-profile/bin"
-              $env.PATH = prepath "/etc/profiles/per-user/${currentSystemUser}/bin"
-              $env.PATH = prepath "/nix/var/nix/profiles/default/bin"
-              $env.PATH = prepath "/run/current-system/sw/bin"
-              ${getExe' pkgs.coreutils "dircolors"} --c-shell | parse "setenv {key} {val}" | transpose -rd | load-env
-              $env.NH_FLAKE = "${env.NH_FLAKE}"
-              $env.NIXPKGS_REV = "${env.NIXPKGS_REV}"
-              if (not ($"($zhukcfg)/autoload" | path exists)) { mkdir $"($zhukcfg)/autoload" }
-              # carapace
-              $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
-              if (not ($"($zhukcfg)/autoload/carapace.nu" | path exists)) {
-                ${getExe pkgs.carapace} _carapace nushell | save --force $"($zhukcfg)/autoload/carapace.nu"
-              }
-
-              source $"($zhukcfg)/zoxide.nu"
-
-              # https://github.com/bydmiller/nixos-configs/blob/6a7053f1e081c21cf4362724b57d3d70e63198ed/machines/nebula/homes/zsh/aliases.nix#L63-L64
-              alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short
-              alias canihazip4 = ${dig} @resolver4.opendns.com myip.opendns.com +short -4
-              ${lib.optionalString isDarwin ''
-                alias nu-open = open
-                alias open = ^open
-              ''}
-              use std/config *
-
-              # Initialize the PWD hook as an empty list if it doesn't exist
-              $env.config.hooks.env_change.PWD = $env.config.hooks.env_change.PWD? | default []
-
-              $env.config.hooks.env_change.PWD ++= [{||
-                if (which direnv | is-empty) {
-                  # If direnv isn't installed, do nothing
-                  return
-                }
-
-                direnv export json | from json | default {} | load-env
-                # If direnv changes the PATH, it will become a string and we need to re-convert it to a list
-                $env.PATH = do (env-conversions).path.from_string $env.PATH
-              }]
-            ''; # nushell }}}
+            '';
             ".ssh/config".text =
-              # {{{
               lib.optionalString
               isDarwin ''
                 Host *
@@ -169,11 +151,18 @@
                   IdentityFile ${env.HOME}/.ssh/misc.pub
                   IdentityFile ${env.HOME}/.ssh/work.pub
                 Include ${env.HOME}/.ssh/hosts
-                Include ${env.HOME}/.ssh/mutable-config''; # }}}
+                Include ${env.HOME}/.ssh/mutable-config'';
           }
           // lib.optionalAttrs isDarwin {
             "LAPS".source = mkLk "${env.HOME}/${LAPS}";
-            "${LAPS}/com.mitchellh.ghostty/config".source = mkLk "${env.NH_FLAKE}/configs/ghostty";
+            "${LAPS}/com.mitchellh.ghostty" = {
+              source = mkLk "${env.HOME}/.config/ghostty";
+              recursive = true;
+            };
+            "${LAPS}/nushell" = {
+              source = mkLk "${env.HOME}/.config/nushell";
+              recursive = true;
+            };
           };
       };
     };

@@ -5,10 +5,16 @@
   lib,
   ...
 }: {
-  # sway's WLR_RENDERER=vulkan crashes on wlr capture method so far
-  programs.zsh.loginShellInit = lib.mkBefore ''
-    [[ "$(${lib.getExe' pkgs.coreutils "tty"})" == /dev/tty1 ]] && ${lib.getExe pkgs.sway} --unsupported-gpu -d > ~/sway.log 2> ~/sway.err.log
-  '';
+  programs.zsh.loginShellInit = let
+    inherit (pkgs) sway coreutils;
+    inherit (lib) getExe getExe';
+  in
+    lib.mkBefore ''
+      if [[ "$(${getExe' coreutils "tty"})" == "/dev/tty1" && "$USER" == "${currentSystemUser}" ]]; then
+        sleep 5
+        ${getExe sway} --unsupported-gpu > sway.log 2> sway.err.log
+      fi
+    '';
   xdg.portal = {
     enable = true;
     wlr.enable = true;
@@ -92,7 +98,6 @@
         ];
       };
     };
-
     seatd = {
       enable = true;
       user = currentSystemUser;

@@ -4,7 +4,26 @@
   config,
   inputs,
   ...
-}: {
+}: let
+  env = config.environment.variables;
+in {
+  specialisation = let
+    specList = builtins.attrNames config.specialisation;
+    mkDefaultEntry = c: let
+      specName = c.zhuk._spec;
+      specListWD = ["Default"] ++ specList;
+      specIdx = lib.lists.findFirstIndex (name: name == specName) 0 specListWD;
+    in "default_entry: ${builtins.toString (specIdx + 3)}";
+    mkSpec = name: extraAttrs: {...} @ i:
+      {
+        zhuk._spec = name;
+        environment.etc."specialisation".text = i.config.zhuk._spec; # for nh
+        boot.loader.limine.extraConfig = mkDefaultEntry i.config;
+      }
+      // extraAttrs;
+  in {
+    sway.configuration = mkSpec "sway" {imports = [../module/sway.nix];};
+  };
   imports = [
     inputs.disko.nixosModules.default
     inputs.apollo.nixosModules.default
@@ -30,14 +49,6 @@
   };
   boot = {
     loader = {
-      grub = {
-        enable = false;
-      };
-      systemd-boot.enable = false;
-      timeout = 5;
-      # 🚀 Bootloader Configuration
-      efi.canTouchEfiVariables = true;
-      efi.efiSysMountPoint = "/boot";
       limine = {
         enable = true;
         efiSupport = true;
@@ -53,8 +64,14 @@
               path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
         '';
       };
+      grub = {
+        enable = false;
+      };
+      systemd-boot.enable = false;
+      timeout = 0;
+      efi.canTouchEfiVariables = true;
+      efi.efiSysMountPoint = "/boot";
     };
-
     kernelModules = [
       "ahci" # Advanced Host Controller Interface for SATA devices
       "xhci_pci" # USB 3.0
@@ -83,48 +100,31 @@
           hostKeys = ["/boot/initrd_ssh_host_ed25519_key"];
         };
       };
-      # NEW: use systemd-networkd in initrd (instead of udhcpc)
-      # The exact option names can vary a bit by nixpkgs revision, but the idea is:
-      # - enable networkd in initrd
-      # - add a .network that enables DHCP on your NIC
-      systemd.network = {
-        enable = true;
-        networks."10-wan" = {
-          matchConfig.Name = "en* eth*"; # or set the exact name, e.g. "enp3s0"
-          networkConfig.DHCP = "yes";
-          # optionally:
-          # networkConfig.IPv6AcceptRA = true;
-          # dhcpV4Config.UseDomains = true;
+      systemd = {
+        users.root.shell = "/bin/systemd-tty-ask-password-agent";
+        network = {
+          enable = true;
+          networks."10-wan" = {
+            matchConfig.Name = "en* eth*"; # or set the exact name, e.g. "enp3s0"
+            networkConfig.DHCP = "yes";
+            # optionally:
+            # networkConfig.IPv6AcceptRA = true;
+            # dhcpV4Config.UseDomains = true;
+          };
         };
       };
     };
-  };
-  systemd.services.initrd-luks-profile = {
-    description = "Initrd helper to add cryptsetup-askpass to root profile";
-    wantedBy = ["initrd.target"];
-    before = ["initrd.target"];
-    after = ["systemd-tmpfiles-setup.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      echo 'cryptsetup-askpass' >> /root/.profile
-      echo 'exit' >> /root/.profile
-    '';
   };
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware = {
     enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   };
-  specialisation.sway.configuration = {
-    environment.etc."specialisation".text = config.zhuk.__spec; # for nh
-    imports = [
-      ../module/sway.nix
-    ];
-  };
   services = {
+    navidrome = {
+      enable = true;
+      settings.MusicFolder = "${env.HOME}/Music";
+    };
     fstrim.enable = true;
     btrfs.autoScrub = {
       enable = true;
@@ -132,7 +132,9 @@
       fileSystems = ["/"];
     };
   };
-  programs.xstarbound.enable = false;
+  programs.xstarbound = {
+    enable = false;
+  };
   zhuk.git.secrets = false;
   zhuk.jj.secrets = false;
 }

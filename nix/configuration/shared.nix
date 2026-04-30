@@ -11,6 +11,8 @@
 }: let
   env = config.environment.variables;
   shells = with pkgs; [nushell zsh fish];
+  specMsg = "Evaluating specialisation: ${config.zhuk._spec}";
+  reportSpec = builtins.trace specMsg;
 in {
   nixpkgs.overlays = [
     (final: prev:
@@ -180,13 +182,18 @@ in {
       auto-optimise-store = false;
       cores = 0;
       sandbox = lib.mkDefault true; # [INFO]: "relaxed" or bool;
-      extra-substituters = [
-        "https://nix-community.cachix.org"
-      ];
-      extra-trusted-public-keys = [
-        "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
+      extra-substituters =
+        []
+        ++ lib.optionals (currentSystemName != "celebrimbor") [
+          "https://nix-community.cachix.org"
+        ];
+      extra-trusted-public-keys =
+        [
+          "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
+        ]
+        ++ lib.optionals (currentSystemName != "celebrimbor") [
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        ];
       trusted-users = [
         "@admin"
         "${currentSystemUser}"
@@ -214,7 +221,7 @@ in {
       ]
       ++ [pkgs.maple-mono.variable];
   };
-  networking.hostName = currentSystemName;
+  networking.hostName = reportSpec currentSystemName;
   # zsh {{{
   programs.zsh = let
     inherit (lib) getExe getExe';

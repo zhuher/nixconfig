@@ -223,13 +223,14 @@ in {
       _7zz,
     }: let
       pname = "ghostty-darwin";
-      version = "tip";
+      version = "1.3.1";
     in
       stdenv.mkDerivation {
         inherit pname version;
         src = fetchurl {
-          url = "https://github.com/ghostty-org/ghostty/releases/download/${version}/Ghostty.dmg";
-          sha256 = "sha256-UOgWBYHIhHHBzbKruTMYnGapp254ztO3lfC61JoLEIg=";
+          # url = "https://github.com/ghostty-org/ghostty/releases/download/${version}/Ghostty.dmg";
+          url = "https://release.files.ghostty.org/${version}/Ghostty.dmg";
+          sha256 = "sha256-GM/ysKbO6Q7q2cfTBk6AiiUqQLryFKp1LB7LeTuPX2k=";
         };
 
         outputs = [

@@ -56,7 +56,7 @@ in {
     {path = "/Applications/Mail.app";}
     {path = "/Applications/Calendar.app";}
     {path = "/Applications/Orion.app";}
-    {path = "/Applications/Nix Apps/Ghostty.app";}
+    {path = "${pkgs.zhuk.ghostty}/Applications/Ghostty.app";}
     {path = "/Applications/Толк.app";}
     {path = "/Applications/Time.app";}
     # {path = "/Applications/Microsoft Outlook.app";}
