@@ -145,3 +145,8 @@ source $ZSH_HISTORY_SUBSTRING_SEARCH_DIR/share/zsh-history-substring-search/zsh-
 bindkey "^[[A" history-substring-search-up
 bindkey "^[[B" history-substring-search-down
 ed() { pushd "$($ZOXIDE_EXE query $1)"; $EDITOR; popd }
+if (( ${+SHLVL} && SHLVL > 1 )); then
+  return  # or exit 0
+else
+  exec nu -il
+fi
