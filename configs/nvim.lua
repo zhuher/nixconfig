@@ -84,7 +84,7 @@ local diag_opts = {
     end,
   },
   jump = {
-    float = true,
+    -- float = true, -- deprecated
   },
 }
 for type, symbol in pairs(symbols) do

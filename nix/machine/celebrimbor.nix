@@ -3,6 +3,7 @@
   lib,
   config,
   inputs,
+  currentSystemUser,
   ...
 }: let
   env = config.environment.variables;
@@ -115,12 +116,17 @@ in {
       };
     };
   };
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware = {
     enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   };
   services = {
+    syncthing = {
+      dataDir = "${env.HOME}/Sync";
+      user = currentSystemUser;
+      enable = true;
+      openDefaultPorts = true; # Open ports in the firewall for Syncthing. (NOTE: this will not open syncthing gui port)
+    };
     navidrome = {
       enable = true;
       settings.MusicFolder = "${env.HOME}/Music";
@@ -132,9 +138,9 @@ in {
       fileSystems = ["/"];
     };
   };
-  programs.xstarbound = {
-    enable = false;
-  };
+  programs.zsh.interactiveShellInit = lib.mkBefore ''
+    ulimit -n 65535
+  '';
   zhuk.git.secrets = false;
   zhuk.jj.secrets = false;
 }

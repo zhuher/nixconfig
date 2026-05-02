@@ -3,8 +3,7 @@ final: _prev: let
 in {
   # zig = final.zigpkgs."0_16_0";
   # zls = final.zigpkgs.zls-master;
-  # wrappers {{{
-  # bat {{{
+
   bat-wrapped = with final;
     symlinkJoin {
       name = "bat-wrapped";
@@ -15,8 +14,7 @@ in {
         BAT_CONFIG_PATH ${../configs/bat}
       '';
     };
-  # bat }}}
-  # tmux {{{
+
   tmux-wrapped = with final;
     symlinkJoin {
       name = "tmux";
@@ -29,8 +27,7 @@ in {
         ${../configs/tmux.conf}
       '';
     };
-  # tmux }}}
-  # nvim {{{
+
   nvim-wrapped = with final;
     symlinkJoin {
       name = "nvim";
@@ -43,9 +40,7 @@ in {
         --prefix PATH : ${final.lib.makeBinPath (with final; [git emmylua-ls])}
       '';
     };
-  # nvim }}}
-  # wrappers }}}
-  # linkFiles {{{
+
   # turns a list of [ [ "srcPath1" "dstPath1" ] [ "srcPath2" "dstPath2" ] ] into a mkdir and ln of dst to src script
   linkFiles = fileList:
     builtins.concatStringsSep "" (builtins.map (lk: let
@@ -57,85 +52,7 @@ in {
     in
       final.zhuk.notify "Populating ${dst}" ''${mkdir} -pv "$(${dirname} -- "${dst}")" && ${ln} -fsv "${src}" "${dst}"'')
     fileList);
-  # }}}
-  # syncthing {{{
-  syncthing =
-    fcp (
-      {
-        lib,
-        fetchurl,
-        stdenvNoCC,
-        # clangStdenv,
-        go,
-        apple-sdk_15,
-        darwin,
-        zig,
-        writeShellScriptBin,
-      }: let
-        pname = "syncthing";
-        version = "2.0.14";
-        sysroot = "${apple-sdk_15}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk";
-        zigbin = lib.getExe' zig "zig";
-        zigargs =
-          if stdenv.isDarwin
-          then "${zigbin} cc -O3 -march=native -I${sysroot}/usr/include -L${sysroot}/usr/lib -L${darwin.libresolv}/lib -F${sysroot}/System/Library/Frameworks -Wno-typedef-redefinition -Wno-newline-eof -Wno-nullability-extension -Wno-strict-prototypes -Wno-macro-redefined -Wno-deprecated-declarations -Wno-undef -Wno-tautological-compare -Wno-documentation -Wno-documentation-unknown-command -Wno-nullability-completeness -Wno-date-time -Wno-unknown-warning-option -Wno-availability -Wno-overriding-deployment-version -Xclang -Ofast"
-          else "${zigbin} cc";
-        zigc = writeShellScriptBin "clang" ''
-          exec -a ${zigbin} ${zigargs} $@
-        '';
-        stdenv = stdenvNoCC;
-        # stdenv = clangStdenv;
-      in
-        stdenv.mkDerivation {
-          inherit pname version;
 
-          strictDeps = true;
-
-          nativeBuildInputs = [
-            zigc
-            go
-          ];
-
-          src = fetchurl {
-            url = "https://github.com/syncthing/syncthing/releases/download/v${version}/syncthing-source-v${version}.tar.gz";
-            sha256 = "sha256-/sNs4gu81ubRy3DPsK96RcYiFYE2HZu5KAc4myRwOgI=";
-          };
-          env = {
-            CGO_ENABLED = 1;
-          };
-
-          buildPhase = ''
-            runHook preBuild
-            # We change HOME to a writable location to avoid this error during the build: failed to initialize build cache at /homeless-shelter/Library/Caches/go-build: mkdir /homeless-shelter: operation not permitted
-            HOME=$TMPDIR
-            go run build.go build
-            go run build.go install
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            runHook preInstall
-
-            mkdir -p $out/bin
-            cp ./bin/${pname} $out/bin/
-
-            runHook postInstall
-          '';
-
-          meta = {
-            description = "Open Source Continuous File Synchronization";
-            homepage = "https://github.com/syncthing/syncthing";
-            license = lib.licenses.gpl3;
-            maintainers = with lib.maintainers; [zhuher];
-            mainProgram = "syncthing";
-            platforms = lib.platforms.darwin;
-            sourceProvenance = with lib.sourceTypes; [fromSource];
-          };
-        }
-    ) {
-      #inherit (final) zig;
-    };
-  # syncthing }}}
   writeZig = zig: name: text: args: let
     src = final.writeText "${name}.zig" text;
   in
@@ -147,15 +64,88 @@ in {
       mv ${name} $out/bin/${name}
     '';
   zhuk = {
-    # notify {{{
     # Simple notification function for shell scripts
     notify = msg: body: ''
       echo -e "\033[34m${msg}...\033[0m"
       ${body}
       echo -e "\033[32m${msg}... Done.\033[0m"
     '';
-    # notify }}}
-    # alex313031-codium {{{
+
+    syncthing =
+      fcp (
+        {
+          lib,
+          fetchurl,
+          stdenvNoCC,
+          go,
+          apple-sdk_15,
+          darwin,
+          zig,
+          writeShellScriptBin,
+        }: let
+          pname = "syncthing";
+          version = "2.0.16";
+          sysroot = "${apple-sdk_15}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk";
+          zigbin = lib.getExe' zig "zig";
+          zigargs =
+            if stdenv.isDarwin
+            then "${zigbin} cc -O3 -march=native -I${sysroot}/usr/include -L${sysroot}/usr/lib -L${darwin.libresolv}/lib -F${sysroot}/System/Library/Frameworks -Wno-typedef-redefinition -Wno-newline-eof -Wno-nullability-extension -Wno-strict-prototypes -Wno-macro-redefined -Wno-deprecated-declarations -Wno-undef -Wno-tautological-compare -Wno-documentation -Wno-documentation-unknown-command -Wno-nullability-completeness -Wno-date-time -Wno-unknown-warning-option -Wno-availability -Wno-overriding-deployment-version -Xclang -Ofast"
+            else "${zigbin} cc";
+          zigc = writeShellScriptBin "clang" ''
+            exec -a ${zigbin} ${zigargs} $@
+          '';
+          stdenv = stdenvNoCC;
+        in
+          stdenv.mkDerivation {
+            inherit pname version;
+
+            strictDeps = true;
+
+            nativeBuildInputs = [
+              zigc
+              go
+            ];
+
+            src = fetchurl {
+              url = "https://github.com/syncthing/syncthing/releases/download/v${version}/syncthing-source-v${version}.tar.gz";
+              sha256 = "sha256-+Tg2+UOWfI/mCOkP1twsQZzgDPoMpSZsqobCKuKQ8Wk=";
+            };
+            env = {
+              CGO_ENABLED = 1;
+            };
+
+            buildPhase = ''
+              runHook preBuild
+              # We change HOME to a writable location to avoid this error during the build: failed to initialize build cache at /homeless-shelter/Library/Caches/go-build: mkdir /homeless-shelter: operation not permitted
+              HOME=$TMPDIR
+              go run build.go build
+              go run build.go install
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/bin
+              cp ./bin/${pname} $out/bin/
+
+              runHook postInstall
+            '';
+
+            meta = {
+              description = "Open Source Continuous File Synchronization";
+              homepage = "https://github.com/syncthing/syncthing";
+              license = lib.licenses.gpl3;
+              maintainers = with lib.maintainers; [zhuher];
+              mainProgram = "syncthing";
+              platforms = lib.platforms.darwin;
+              sourceProvenance = with lib.sourceTypes; [fromSource];
+            };
+          }
+      ) {
+        inherit (final) zig;
+      };
+
     alex313031-codium = fcp ({
       lib,
       fetchurl,
@@ -214,82 +204,7 @@ in {
             sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
           };
         })) {};
-    # alex313031-codium }}}
-    # ghostty {{{
-    ghostty = fcp ({
-      lib,
-      fetchurl,
-      stdenv,
-      _7zz,
-    }: let
-      pname = "ghostty-darwin";
-      version = "1.3.1";
-    in
-      stdenv.mkDerivation {
-        inherit pname version;
-        src = fetchurl {
-          # url = "https://github.com/ghostty-org/ghostty/releases/download/${version}/Ghostty.dmg";
-          url = "https://release.files.ghostty.org/${version}/Ghostty.dmg";
-          sha256 = "sha256-GM/ysKbO6Q7q2cfTBk6AiiUqQLryFKp1LB7LeTuPX2k=";
-        };
 
-        outputs = [
-          "out"
-          "terminfo"
-        ];
-
-        nativeBuildInputs = [_7zz];
-
-        sourceRoot = "Ghostty.app";
-
-        unpackPhase = ''
-          runHook preUnpack
-          ${lib.getExe _7zz} e -spf2 -snld -i!Ghostty.app "$src"
-          runHook postUnpack
-        '';
-
-        installPhase = ''
-          runHook preInstall
-
-          mkdir -p $out/Applications/Ghostty.app $out/bin
-          cp -R . $out/Applications/Ghostty.app
-          ln -s $out/Applications/Ghostty.app/Contents/MacOS/ghostty $out/bin
-
-          runHook postInstall
-        '';
-        postInstall = ''
-          mkdir -p $out/nix-support $terminfo/share
-          cp -R $out/Applications/Ghostty.app/Contents/Resources/terminfo $terminfo/share/
-          echo "$terminfo" >> $out/nix-support/propagated-user-env-packages
-        '';
-
-        meta = {
-          mainProgram = "Ghostty.app";
-          homepage = "https://ghostty.org/";
-          description = "Ghostty is a fast, feature-rich, and cross-platform terminal emulator that uses platform-native UI and GPU acceleration.";
-          longDescription = ''
-            Ghostty is a terminal emulator that differentiates
-            itself by being fast, feature-rich, and native. While
-            there are many excellent terminal emulators available,
-            they all force you to choose between speed, features,
-            or native UIs. Ghostty provides all three.
-          '';
-          platforms = with lib.platforms; darwin;
-          changelog = "https://ghostty.org/docs/install/release-notes/${
-            builtins.replaceStrings ["."] ["-"] version
-          }";
-          license = lib.licenses.gpl3Only;
-          maintainers = with lib.maintainers; [
-            zhuher
-          ];
-          outputsToInstall = [
-            "out"
-            "terminfo"
-          ];
-        };
-      }) {};
-    # ghostty }}}
-    # thorium-browser {{{
     thorium-browser = fcp ({
       lib,
       fetchurl,
@@ -331,8 +246,7 @@ in {
           sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
         };
       }) {};
-    # thorium-browser }}}
-    # monero-cli {{{
+
     monero-cli = fcp ({
       lib,
       fetchurl,
@@ -379,8 +293,7 @@ in {
           sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
         };
       }) {};
-    # monero-cli }}}
-    # mullvad-upgrade-tunnel {{{
+
     mullvad-upgrade-tunnel = fcp ({
       lib,
       fetchFromGitHub,
@@ -441,8 +354,7 @@ in {
           sourceProvenance = with lib.sourceTypes; [fromSource];
         };
       }) {};
-    # mullvad-upgrade-tunnel }}}
-    # tile-thumbnails {{{
+
     tile-thumbnails = fcp ({
       writeTextFile,
       ffmpeg,
@@ -451,7 +363,7 @@ in {
     }:
       writeTextFile {
         name = "tile-thumbnails";
-        # script content {{{
+
         text = ''
           #!/bin/sh
           #===============================================================================
@@ -605,162 +517,152 @@ in {
               tilevideo "''${infile}" # no timestamp
           fi
         '';
-        # script content }}}
+
         executable = true;
         destination = "/bin/tile-thumbnails";
       }) {};
-    # tile-thumbnails }}}
-    emacs = let
-      # compilation opts {{{
-      epkg = final.emacs-git.override {
-        # # Boolean flags
-        # withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-        # noGui ? false,
-        # srcRepo ? false,
-        # withAcl ? false,
-        # withAlsaLib ? false,
-        # withAthena ? false,
-        # withCairo ? withX,
-        # withCsrc ? true,
-        # withDbus ? stdenv.hostPlatform.isLinux,
-        # # https://github.com/emacs-mirror/emacs/blob/emacs-30.2/etc/NEWS#L52-L56
-        # withGcMarkTrace ? false,
-        # withGTK3 ? withPgtk && !noGui,
-        # withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets),
-        # withGpm ? stdenv.hostPlatform.isLinux,
-        # # https://github.com/emacs-mirror/emacs/blob/emacs-27.2/etc/NEWS#L118-L120
-        # withImageMagick ? false,
-        # # Emacs 30+ has native JSON support
-        # withJansson ? lib.versionOlder version "30",
-        # withMailutils ? true,
-        # withMotif ? false,
-        # withNS ? stdenv.hostPlatform.isDarwin && !(variant == "macport" || noGui),
-        # withPgtk ? false,
-        # withSelinux ? stdenv.hostPlatform.isLinux,
-        # withSQLite3 ? true,
-        # withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-        # withToolkitScrollBars ? true,
-        # withTreeSitter ? true,
-        # withWebP ? true,
-        # withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
-        # withXinput2 ? withX,
-        # withXwidgets ?
-        #   !noGui
-        #   && (withGTK3 || withPgtk || withNS || variant == "macport")
-        #   && (stdenv.hostPlatform.isDarwin || lib.versionOlder version "30"),
-        # # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
-        # # XXX: - Apple_SDK WebKit is compatible with Emacs.
-        # withSmallJaDic ? false,
-        withSmallJaDic = true;
-        # withCompressInstall ? true,
-      }; # compilation opts }}} # fcp "${final.helix}/grammars.nix" {};
-    in
-      {
-        "aarch64-darwin" =
-          # emacs on darwin {{{
-          # (final.emacsPackagesFor (
-          epkg.overrideAttrs (old: {
-            __noChroot = true; # [INFO]: cannot access /etc/ssl/certs otherwise (Operation not permitted)
-            # preBuild = old.preBuild + ''
-            # '';
-            # nativeBuildInputs = with final;
-            #   [zig.cc-unwrapped]
-            #   ++ old.nativeBuildInputs or [];
-            # buildInputs = with final; old.buildInputs or [] ++ [apple-sdk_26];
-            # configureFlags = with final; old.configureFlags ++ ["CFLAGS=-F${apple-sdk_26.passthru.sdkroot}/System/Library/Frameworks"];
-            patches =
-              old.patches
-              ++ [
-                # order taken from https://github.com/bbenchen/homebrew-emacs-plus/blob/9976d930dd3296a12474c08dc215ad6ac49ca5d8/Formula/emacs-plus%4031.rb#L107-L116
-                # and mixed with https://github.com/d12frosted/homebrew-emacs-plus/blob/df393ba5a3f10183fe77a3cf792d15cded73595d/Formula/emacs-plus%4031.rb#L75-L77
-                # (final.fetchpatch {
-                #   url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/df393ba5a3f10183fe77a3cf792d15cded73595d/patches/emacs-31/fix-ns-x-colors.patch";
-                #   sha256 = "sha256-oe3DFgEXwp0cZJl+ufWqTonaeWSliikTRsVDNbcy4Yw=";
-                # })
-                (final.fetchpatch {
-                  url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/system-appearance.patch";
-                  sha256 = "sha256-4+2U+4+2tpuaThNJfZOjy1JPnneGcsoge9r+WpgNDko=";
-                })
-                (final.fetchpatch {
-                  url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/round-undecorated-frame.patch";
-                  sha256 = "sha256-WWLg7xUqSa656JnzyUJTfxqyYB/4MCAiiiZUjMOqjuY=";
-                })
-                (final.fetchpatch {
-                  url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/9976d930dd3296a12474c08dc215ad6ac49ca5d8/patches/emacs-31/alpha-background.patch";
-                  sha256 = "sha256-qfZhWue2RgwEbiz64nKL0Nq5/loMGhg5oDK+gCNyHOg=";
-                })
-                (final.fetchpatch {
-                  url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/ac5d6b64dc2b3567f12145c687ee3febf9597ec8/patches/emacs-30/blur.patch";
-                  sha256 = "sha256-X6ml5Gr5vUaQSb38H92lhK8X9D6oDL4bzmO1ujS74ws=";
-                })
-                (final.writeText "interactive-ns_init_colors.patch" ''
-                  >From a16ca33954c7c69b23176ff15db4c01d48ec92ac Mon Sep 17 00:00:00 2001
-                  From: Zeke Dou <zeke@zekedou.live>
-                  Date: Sun, 5 Apr 2026 15:16:53 +0200
-                  Subject: [PATCH] Move call to ns_init_colors() after init_callproc()
 
-                  'ns_init_colors()' calls 'fatal()' when it cannot read 'etc/rgb.txt'.
-                  This was triggered while building Emacs packages under Nix.
+    emacs =
+      let
+        epkg = final.emacs-git.override {
+          # # Boolean flags
+          # withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+          # noGui ? false,
+          # srcRepo ? false,
+          # withAcl ? false,
+          # withAlsaLib ? false,
+          # withAthena ? false,
+          # withCairo ? withX,
+          # withCsrc ? true,
+          # withDbus ? stdenv.hostPlatform.isLinux,
+          # # https://github.com/emacs-mirror/emacs/blob/emacs-30.2/etc/NEWS#L52-L56
+          # withGcMarkTrace ? false,
+          # withGTK3 ? withPgtk && !noGui,
+          # withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets),
+          # withGpm ? stdenv.hostPlatform.isLinux,
+          # # https://github.com/emacs-mirror/emacs/blob/emacs-27.2/etc/NEWS#L118-L120
+          # withImageMagick ? false,
+          # # Emacs 30+ has native JSON support
+          # withJansson ? lib.versionOlder version "30",
+          # withMailutils ? true,
+          # withMotif ? false,
+          # withNS ? stdenv.hostPlatform.isDarwin && !(variant == "macport" || noGui),
+          # withPgtk ? false,
+          # withSelinux ? stdenv.hostPlatform.isLinux,
+          # withSQLite3 ? true,
+          # withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+          # withToolkitScrollBars ? true,
+          # withTreeSitter ? true,
+          # withWebP ? true,
+          # withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
+          # withXinput2 ? withX,
+          # withXwidgets ?
+          #   !noGui
+          #   && (withGTK3 || withPgtk || withNS || variant == "macport")
+          #   && (stdenv.hostPlatform.isDarwin || lib.versionOlder version "30"),
+          # # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
+          # # XXX: - Apple_SDK WebKit is compatible with Emacs.
+          # withSmallJaDic ? false,
+          withSmallJaDic = true;
+          # withCompressInstall ? true,
+        }; # fcp "${final.helix}/grammars.nix" {};
+      in ((final.emacsPackagesFor
+          ({
+            "aarch64-darwin" =
+              epkg.overrideAttrs
+              (old: {
+                patches =
+                  old.patches
+                  ++ [
+                    # order taken from https://github.com/bbenchen/homebrew-emacs-plus/blob/9976d930dd3296a12474c08dc215ad6ac49ca5d8/Formula/emacs-plus%4031.rb#L107-L116
+                    # and mixed with https://github.com/d12frosted/homebrew-emacs-plus/blob/df393ba5a3f10183fe77a3cf792d15cded73595d/Formula/emacs-plus%4031.rb#L75-L77
+                    # (final.fetchpatch {
+                    #   url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/df393ba5a3f10183fe77a3cf792d15cded73595d/patches/emacs-31/fix-ns-x-colors.patch";
+                    #   sha256 = "sha256-oe3DFgEXwp0cZJl+ufWqTonaeWSliikTRsVDNbcy4Yw=";
+                    # })
+                    (final.fetchpatch {
+                      url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/system-appearance.patch";
+                      sha256 = "sha256-4+2U+4+2tpuaThNJfZOjy1JPnneGcsoge9r+WpgNDko=";
+                    })
+                    (final.fetchpatch {
+                      url = "https://raw.githubusercontent.com/d12frosted/homebrew-emacs-plus/3e95d573d5f13aba7808193b66312b38a7c66851/patches/emacs-31/round-undecorated-frame.patch";
+                      sha256 = "sha256-WWLg7xUqSa656JnzyUJTfxqyYB/4MCAiiiZUjMOqjuY=";
+                    })
+                    (final.fetchpatch {
+                      url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/9976d930dd3296a12474c08dc215ad6ac49ca5d8/patches/emacs-31/alpha-background.patch";
+                      sha256 = "sha256-qfZhWue2RgwEbiz64nKL0Nq5/loMGhg5oDK+gCNyHOg=";
+                    })
+                    (final.fetchpatch {
+                      url = "https://raw.githubusercontent.com/bbenchen/homebrew-emacs-plus/ac5d6b64dc2b3567f12145c687ee3febf9597ec8/patches/emacs-30/blur.patch";
+                      sha256 = "sha256-X6ml5Gr5vUaQSb38H92lhK8X9D6oDL4bzmO1ujS74ws=";
+                    })
+                    (final.writeText "interactive-ns_init_colors.patch" ''
+                      >From a16ca33954c7c69b23176ff15db4c01d48ec92ac Mon Sep 17 00:00:00 2001
+                      From: Zeke Dou <zeke@zekedou.live>
+                      Date: Sun, 5 Apr 2026 15:16:53 +0200
+                      Subject: [PATCH] Move call to ns_init_colors() after init_callproc()
 
-                  * src/emacs.c (main): Move the 'ns_init_colors()' call to the location
-                  after 'init_callproc()', where 'data-directory' is guaranteed to be
-                  valid.
-                  ---
-                   src/emacs.c | 11 +++++++----
-                   1 file changed, 7 insertions(+), 4 deletions(-)
+                      'ns_init_colors()' calls 'fatal()' when it cannot read 'etc/rgb.txt'.
+                      This was triggered while building Emacs packages under Nix.
 
-                  diff --git a/src/emacs.c b/src/emacs.c
-                  index 23e0c6f5318..18bd4902ae8 100644
-                  --- a/src/emacs.c
-                  +++ b/src/emacs.c
-                  @@ -2050,10 +2050,6 @@ android_emacs_init (int argc, char **argv, char *dump_file)
-                   #endif
+                      * src/emacs.c (main): Move the 'ns_init_colors()' call to the location
+                      after 'init_callproc()', where 'data-directory' is guaranteed to be
+                      valid.
+                      ---
+                       src/emacs.c | 11 +++++++----
+                       1 file changed, 7 insertions(+), 4 deletions(-)
 
-                   #ifdef HAVE_NS
-                  -  /* For early calls to ns_lisp_to_color or Fns_list_colors.  */
-                  -  if (!dump_mode)
-                  -    ns_init_colors ();
-                  -
-                     if (!noninteractive)
-                       {
-                   #ifdef NS_IMPL_COCOA
-                  @@ -2293,6 +2289,13 @@ android_emacs_init (int argc, char **argv, char *dump_file)
-                     check_windows_init_file ();
-                   #endif
+                      diff --git a/src/emacs.c b/src/emacs.c
+                      index 23e0c6f5318..18bd4902ae8 100644
+                      --- a/src/emacs.c
+                      +++ b/src/emacs.c
+                      @@ -2050,10 +2050,6 @@ android_emacs_init (int argc, char **argv, char *dump_file)
+                       #endif
 
-                  +#ifdef HAVE_NS
-                  +  /* For early calls to ns_lisp_to_color or Fns_list_colors.
-                  +     Must follow init_callproc which sets data-directory.  */
-                  +  if (!dump_mode)
-                  +    ns_init_colors ();
-                  +#endif
-                  +
-                     /* Intern the names of all standard functions and variables;
-                        define standard keys.  */
+                       #ifdef HAVE_NS
+                      -  /* For early calls to ns_lisp_to_color or Fns_list_colors.  */
+                      -  if (!dump_mode)
+                      -    ns_init_colors ();
+                      -
+                         if (!noninteractive)
+                           {
+                       #ifdef NS_IMPL_COCOA
+                      @@ -2293,6 +2289,13 @@ android_emacs_init (int argc, char **argv, char *dump_file)
+                         check_windows_init_file ();
+                       #endif
 
-                  --
-                  2.51.2
-                '')
-              ];
-          })
-          # )).emacsWithPackages
-          # (epkgs: with epkgs; [treesit-grammars.with-all-grammars])
-          ; # emacs on darwin }}}
-        "x86_64-linux" = (final.emacsPackagesFor epkg).emacsWithPackages (epkgs:
+                      +#ifdef HAVE_NS
+                      +  /* For early calls to ns_lisp_to_color or Fns_list_colors.
+                      +     Must follow init_callproc which sets data-directory.  */
+                      +  if (!dump_mode)
+                      +    ns_init_colors ();
+                      +#endif
+                      +
+                         /* Intern the names of all standard functions and variables;
+                            define standard keys.  */
+
+                      --
+                      2.51.2
+                    '')
+                  ];
+              });
+            "x86_64-linux" = epkg;
+          }."${final.stdenv.hostPlatform.system}")).emacsWithPackages
+        (epkgs:
           with epkgs; [
             treesit-grammars.with-all-grammars
-          ]);
-      }."${final.stdenv.hostPlatform.system}"
-      .override (old: {
-        # stdenv = final.zig.stdenv;
-        # old.stdenv.override {
-        #   cc = final.zig.cc;
-        #   bintools = final.zig.bintools;
-        # };
-        # (
-        #   final.overrideCC old.stdenv
-        #   final.zig.cc
-        # );
-      });
+          ]))
+      # .override (old: {
+      # stdenv = final.zig.stdenv;
+      # old.stdenv.override {
+      #   cc = final.zig.cc;
+      #   bintools = final.zig.bintools;
+      # };
+      # (
+      #   final.overrideCC old.stdenv
+      #   final.zig.cc
+      # );
+      # })
+      ;
   };
 }

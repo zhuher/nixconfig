@@ -26,19 +26,13 @@ in {
         }
       '' "-O ReleaseSafe")
       sccache
-      # zhuk.emacs # FIXME cannot read a hardcoded rgb.txt from build directory
       jujutsu-wrapped
     ];
   };
   homebrew = {
     casks = ["dbeaver-community"];
   };
-  programs = {
-    xstarbound.enable = lib.mkForce false;
-    zsh.interactiveShellInit = ''
-      ulimit -n 65535
-    '';
-  };
+  programs.xstarbound.enable = lib.mkForce false;
   security.pki = {
     installCACerts = true;
     certificates = [
@@ -56,7 +50,7 @@ in {
     {path = "/Applications/Mail.app";}
     {path = "/Applications/Calendar.app";}
     {path = "/Applications/Orion.app";}
-    {path = "${pkgs.zhuk.ghostty}/Applications/Ghostty.app";}
+    {path = "/Applications/Ghostty.app";}
     {path = "/Applications/Толк.app";}
     {path = "/Applications/Time.app";}
     # {path = "/Applications/Microsoft Outlook.app";}

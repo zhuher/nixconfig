@@ -7,6 +7,14 @@
 }: let
   env = config.environment.variables;
 in {
+  nix.settings = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
   homebrew = {
     brews = [
       "virtualenv"
@@ -45,6 +53,7 @@ in {
     ];
   };
   programs.zsh.interactiveShellInit = ''
+    ulimit -n 65535
     alias -- emg='open -a EmacsClient'
     source ${config.sops.secrets.secret-script-1.path}
   '';
@@ -56,11 +65,11 @@ in {
     };
     serviceConfig = {
       KeepAlive = true;
-      Label = "net.syncthing.syncthing";
-      LowPriorityIO = true;
-      ProcessType = "Background";
+      RunAtLoad = true;
+      Label = "zhuk.net.syncthing";
       ProgramArguments = [
-        "${lib.getExe pkgs.syncthing} --no-browser"
+        "${lib.getExe pkgs.zhuk.syncthing}"
+        "--no-browser"
       ];
       StandardOutPath = "${env.HOME}/Library/Logs/Syncthing.log";
       StandardErrorPath = "${env.HOME}/Library/Logs/Syncthing-Errors.log";
@@ -115,12 +124,11 @@ in {
     zhuk.tile-thumbnails
     zhuk.alex313031-codium
     qbittorrent
-    # zhuk.emacs
     prismlauncher
     libjxl
     ice-bar # [ERROR] Crashes when using the floating ice bar.
     appcleaner
-    syncthing
+    zhuk.syncthing
   ];
   local.dock.entries = [
     {path = "/Applications/Safari.app";}
@@ -139,22 +147,4 @@ in {
       options = "--sort dateadded --view grid --display folder";
     }
   ];
-  # launchd.user.agents.zhukmacs.serviceConfig = let
-  #   zsh = lib.getExe pkgs.zsh;
-  #   emacs = lib.getExe' pkgs.zhuk.emacs "emacs";
-  # in {
-  #   AbandonProcessGroup = true;
-  #   Disabled = false;
-  #   KeepAlive = true;
-  #   Label = "zhuk.gnu.emacs.daemon";
-  #   ProcessType = "Interactive";
-  #   RunAtLoad = true;
-  #   StandardOutPath = "${env.HOME}/Library/Logs/Zhukmacs.log";
-  #   StandardErrorPath = "${env.HOME}/Library/Logs/Zhukmacs-Errors.log";
-  #   ProgramArguments = [
-  #     "${zsh}"
-  #     "-ilc"
-  #     "${emacs} --fg-daemon"
-  #   ];
-  # };
 }

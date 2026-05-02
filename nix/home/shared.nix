@@ -23,13 +23,17 @@
         "nushell/autoload/deosb.nu".source = mkLk "${env.NH_FLAKE}/configs/nu/deosb.nu";
         "nushell/env.nu".text = ''
           const zhukcfg = $nu.default-config-dir
+          # # just
+          # if (not ($"($zhukcfg)/just.nu" | path exists)) {
+          #   ${getExe pkgs.just} --completions nushell | save --force $"($zhukcfg)/just.nu"
+          # }
           # zoxide
           if (not ($"($zhukcfg)/zoxide.nu" | path exists)) {
             ${getExe pkgs.zoxide} init nushell | save --force $"($zhukcfg)/zoxide.nu"
           } '';
         "nushell/config.nu".text = ''
           def prepath [path: string] {
-            $env.PATH | split row (char esep) | where { $in != $path} | prepend $path
+            $env.PATH | find -v $path | prepend $path
           }
           $env.PATH = prepath "/opt/homebrew/bin"
           $env.PATH = prepath "/opt/homebrew/sbin"
@@ -37,6 +41,7 @@
           $env.PATH = prepath "/etc/profiles/per-user/${currentSystemUser}/bin"
           $env.PATH = prepath "/nix/var/nix/profiles/default/bin"
           $env.PATH = prepath "/run/current-system/sw/bin"
+          ${lib.optionalString (!isDarwin) ''$env.PATH = prepath "${config.security.wrapperDir}" # has to be at the top of PATH''}
           ${getExe' pkgs.coreutils "dircolors"} --c-shell | parse "setenv {key} {val}" | transpose -rd | load-env
           $env.NH_FLAKE = "${env.NH_FLAKE}"
           $env.NIXPKGS_REV = "${env.NIXPKGS_REV}"
@@ -46,6 +51,7 @@
           if (not ($"($zhukcfg)/autoload/carapace.nu" | path exists)) {
             ${getExe pkgs.carapace} _carapace nushell | save --force $"($zhukcfg)/autoload/carapace.nu"
           }
+          # source $"($zhukcfg)/just.nu"
           source $"($zhukcfg)/zoxide.nu"
           # https://github.com/bydmiller/nixos-configs/blob/6a7053f1e081c21cf4362724b57d3d70e63198ed/machines/nebula/homes/zsh/aliases.nix#L63-L64
           alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short
@@ -53,6 +59,7 @@
           ${lib.optionalString isDarwin ''
             alias nu-open = open
             alias open = ^open
+            alias emg = open -a EmacsClient
           ''}
           use std/config *
           # Initialize the PWD hook as an empty list if it doesn't exist
@@ -69,8 +76,8 @@
         '';
         "ghostty/config".source = mkLk "${env.NH_FLAKE}/configs/ghostty";
         "sway/config".source = mkLk "${env.NH_FLAKE}/configs/sway";
-        # "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
-        # "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
+        "emacs/init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/init.el";
+        "emacs/early-init.el".source = mkLk "${env.NH_FLAKE}/configs/emacs/early-init.el";
         "git/ignore".text = ''
           .DS_Store
         '';

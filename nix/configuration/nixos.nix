@@ -24,6 +24,7 @@ in {
   environment = {
     enableAllTerminfo = true;
     systemPackages = with pkgs; [
+      keepassxc
     ];
     localBinInPath = true;
     variables = {

@@ -34,11 +34,12 @@ use "awg-quick extern" "awg-quick up"
 use "awg-quick extern" "awg-quick down"
 alias "aa up" = awg-quick up
 alias "aa down" = awg-quick down
-def --wrapped n [...rest] {
-  use std/dirs
-  dirs add $"($env.NH_FLAKE)"
-  ^just ...$rest
-  dirs drop
+def "nu-complete nuconfig" [input] {
+    let spans = $input | str replace "n" $"just --justfile=($env.NH_FLAKE)/justfile" | split row " "
+    do $env.config.completions.external.completer $spans
+}
+def n [...rest: string@"nu-complete nuconfig"] {
+  ^just $"--justfile=($env.NH_FLAKE)/justfile" ...$rest
 }
 def "nu-complete zoxide path" [context: string] {
     let parts = $context | str trim --left | split row " " | skip 1 | each { str downcase }
@@ -111,6 +112,7 @@ def update-nixpkgs [] {
   sed -i $"s/($env.NIXPKGS_REV)/(latesthash)/g" ...(glob -D ./**/*.nix)
   dirs drop
 }
+$env.PROMPT_COMMAND_RIGHT = { $'(if (($env.CMD_DURATION_MS | into int) > 10) { $"\(⌛️(($env.CMD_DURATION_MS | into float) / 1000)) " } else "")(date now | format date "%H:%M:%S@%Y-%m-%d")' }
 $env.config = {
   show_banner: false,
   completions: {

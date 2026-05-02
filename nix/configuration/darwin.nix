@@ -11,7 +11,6 @@
 in {
   zhuk.lixVer = "latest";
   imports = [
-    # nix-homebrew {{{
     inputs.sops-nix.darwinModules.sops
     inputs.nix-index-database.darwinModules.nix-index
     inputs.home-manager.darwinModules.home-manager
@@ -29,7 +28,7 @@ in {
         autoMigrate = true;
       };
     }
-    ( # dock {{{
+    (
       {
         config,
         pkgs,
@@ -134,14 +133,13 @@ in {
             }
           );
         }
-    ) # dock }}}
+    )
   ];
-  # dock {{{
+
   local.dock = {
     enable = true;
   };
-  # dock }}}
-  # brew & app store {{{
+
   homebrew = {
     taps = builtins.attrNames config.nix-homebrew.taps;
     enable = true;
@@ -175,15 +173,30 @@ in {
       "Velja" = 1607635845;
       "StrongBox" = 1481853033;
     };
-  }; # brew & app store }}}
-  # services.emacs = {
-  #   enable = false;
-  #   package = pkgs.zhuk.emacsen.darwin;
-  # };
+  };
+  launchd.user.agents.zhukmacs.serviceConfig = let
+    zsh = lib.getExe pkgs.zsh;
+    emacs = lib.getExe' pkgs.zhuk.emacs "emacs";
+  in {
+    AbandonProcessGroup = false;
+    Disabled = false;
+    KeepAlive = true;
+    Label = "zhuk.gnu.emacs.daemon";
+    ProcessType = "Adaptive";
+    RunAtLoad = true;
+    StandardOutPath = "${env.HOME}/Library/Logs/Zhukmacs.log";
+    StandardErrorPath = "${env.HOME}/Library/Logs/Zhukmacs-Errors.log";
+    EnvironmentVariables = {"NONU" = "1";};
+    ProgramArguments = [
+      "${zsh}"
+      "-ilc"
+      "${emacs} --fg-daemon"
+    ];
+  };
   system = {
     primaryUser = "${currentSystemUser}";
     stateVersion = 5;
-    # defaults {{{
+
     defaults = {
       # Reduce window resize animation duration.
       NSGlobalDomain.NSWindowResizeTime = 0.001;
@@ -325,7 +338,7 @@ in {
         TrackpadThreeFingerDrag = false;
         TrackpadThreeFingerTapGesture = 2;
       };
-    }; # defaults }}}
+    };
     keyboard = {
       enableKeyMapping = true;
     };
@@ -377,8 +390,8 @@ in {
     home = "/Users/${currentSystemUser}";
   };
   environment.systemPackages = with pkgs; [
-    # zhuk.emacsen.darwin
-    zhuk.ghostty
+    zhuk.emacs
+    ghostty-bin
     iina
     monitorcontrol
     localsend

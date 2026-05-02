@@ -483,11 +483,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1773564387,
-        "narHash": "sha256-RrT42SfP69jhENDsHN25iiurTHa4qVaI9fueBGikPHo=",
+        "lastModified": 1777833923,
+        "narHash": "sha256-xi7BMwajgJqjICXS6qjNUd1eczr32/AiADRkgW7PCe4=",
         "owner": "zhuher",
         "repo": "xStarbound",
-        "rev": "c5209a9ba9eae1c445a5a568e25d7475a165e675",
+        "rev": "857ce30a1a663e4d290d5d2841bda27b84c9d7be",
         "type": "github"
       },
       "original": {
