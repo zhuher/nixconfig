@@ -1,3 +1,4 @@
+ulimit -n 65535
 alias c = clear
 $env.EDITOR = "nvim"
 alias e = ^$env.EDITOR
@@ -117,7 +118,7 @@ $env.config = {
   show_banner: false,
   completions: {
     case_sensitive: false # case-sensitive completions
-    quick: false    # set to false to prevent auto-selecting completions
+    quick: true    # set to false to prevent auto-selecting completions
     partial: true    # set to false to prevent partial filling of the prompt
     algorithm: "fuzzy"    # prefix or fuzzy
     external: {

@@ -45,6 +45,10 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    homebrew-iss-tap = {
+      url = "github:jurplel/homebrew-tap";
+      flake = false;
+    };
     nfp = {
       url = "github:Gerschtli/nix-formatter-pack";
       inputs.nixpkgs.follows = "nixpkgs";

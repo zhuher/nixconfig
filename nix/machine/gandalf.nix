@@ -20,8 +20,7 @@ in {
       "virtualenv"
     ];
     casks = [
-      # "parsec" # VPN
-      # "tor-browser" VPN
+      # "parsec" # used to be kept for continuous connectivity under a gray ip, but I've gone around it.
     ];
     masApps = {
       # "GarageBand" = 682658836;

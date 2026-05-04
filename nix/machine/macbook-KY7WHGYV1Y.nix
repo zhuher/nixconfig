@@ -7,7 +7,6 @@
 }: let
   env = config.environment.variables;
 in {
-  nix.settings.sandbox = "relaxed";
   services.openssh.enable = false;
   environment = {
     shellAliases = {
@@ -32,7 +31,7 @@ in {
   homebrew = {
     casks = ["dbeaver-community"];
   };
-  programs.xstarbound.enable = lib.mkForce false;
+  programs.xstarbound.enable = false;
   security.pki = {
     installCACerts = true;
     certificates = [
@@ -50,7 +49,7 @@ in {
     {path = "/Applications/Mail.app";}
     {path = "/Applications/Calendar.app";}
     {path = "/Applications/Orion.app";}
-    {path = "/Applications/Ghostty.app";}
+    {path = "/Applications/Nix Apps/Ghostty.app";}
     {path = "/Applications/Толк.app";}
     {path = "/Applications/Time.app";}
     # {path = "/Applications/Microsoft Outlook.app";}

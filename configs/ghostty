@@ -57,7 +57,7 @@ selection-background = cell-foreground
 window-colorspace = display-p3
 window-theme = system
 # theme = dark:IC Orange PPL,light:Catppuccin Latte
-theme = IC Orange PPL
+theme = Dracula
 font-family = "Maple Mono"
 # font {{{ ~!@#$%^&* {} [] () I1l O0o !== \\ <= #{ -> ~@ |> 0x12 |=>==<==>=|======|===|===> <---|--|--------|-<->--<-| [INFO] todo)) fixme))
 font-feature=+cv42

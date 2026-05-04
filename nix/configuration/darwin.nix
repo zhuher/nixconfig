@@ -23,6 +23,7 @@ in {
           "homebrew/homebrew-core" = inputs.homebrew-core;
           "homebrew/homebrew-cask" = inputs.homebrew-cask;
           "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+          "jurplel/homebrew-tap" = inputs.homebrew-iss-tap;
         };
         mutableTaps = false;
         autoMigrate = true;
@@ -160,6 +161,7 @@ in {
       "qlmarkdown"
       "syntax-highlight"
       "keka"
+      "jurplel/tap/instant-space-switcher"
     ];
 
     # These app IDs are from using the mas CLI app

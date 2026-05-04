@@ -230,6 +230,22 @@
         "type": "github"
       }
     },
+    "homebrew-iss-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776555614,
+        "narHash": "sha256-SMDC9Vfn+7CzEsAqIALifRgLZkw7Cql6NV7sMlKel0U=",
+        "owner": "jurplel",
+        "repo": "homebrew-tap",
+        "rev": "1bea57e68a650992e656622868984be9f990b58e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jurplel",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "neovim-nightly-overlay": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -428,6 +444,7 @@
         "homebrew-bundle": "homebrew-bundle",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
+        "homebrew-iss-tap": "homebrew-iss-tap",
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nfp": "nfp",
         "nix-darwin": "nix-darwin",
