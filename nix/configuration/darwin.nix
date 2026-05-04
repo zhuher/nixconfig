@@ -13,8 +13,8 @@ in {
   imports = [
     inputs.sops-nix.darwinModules.sops
     inputs.nix-index-database.darwinModules.nix-index
-    inputs.home-manager.darwinModules.home-manager
     inputs.nix-homebrew.darwinModules.nix-homebrew
+    inputs.hjem.darwinModules.hjem
     {
       nix-homebrew = {
         enable = true;

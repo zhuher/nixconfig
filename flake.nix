@@ -24,12 +24,13 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    hjem = {
+      url = "github:feel-co/hjem";
+      inputs.nix-darwin.follows = "nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
@@ -116,6 +117,7 @@
       isDarwin ? false,
       isWSL ? false,
     }: let
+      opt = nixpkgs.lib.optional;
       systemFunc =
         if isDarwin
         then inputs.nix-darwin.lib.darwinSystem
@@ -124,35 +126,32 @@
       systemFunc rec {
         inherit system;
         specialArgs = {inherit inputs isDarwin;};
-        modules = [
-          ./nix/configuration/shared.nix
-          ./nix/machine/${name}.nix
-          ./nix/home/shared.nix
-          inputs.xsb.nixosModules.default
-          {
-            config._module.args = {
-              currentSystem = system;
-              currentSystemUser = user;
-              currentSystemName = name;
-              inherit isWSL;
-              # inherit isDarwin;
-              inherit inputs;
-            };
-          }
-          {
-            nixpkgs = {
-              config.allowUnfree = true;
-              inherit overlays;
-              flake.setFlakeRegistry = false; # set manually along with all other inputs
-              flake.setNixPath = false; # ditto
-            };
-          }
-          (
-            if isWSL
-            then inputs.nixos-wsl.nixosModules.wsl
-            else {}
-          )
-        ];
+        modules =
+          [
+            ./nix/configuration/shared.nix
+            ./nix/machine/${name}.nix
+            ./nix/home/shared.nix
+            ./nix/home/${name}.nix
+            inputs.xsb.nixosModules.default
+            {
+              config._module.args = {
+                currentSystem = system;
+                currentSystemUser = user;
+                currentSystemName = name;
+                inherit isWSL;
+                inherit inputs;
+              };
+            }
+            {
+              nixpkgs = {
+                config.allowUnfree = true;
+                inherit overlays;
+                flake.setFlakeRegistry = false; # set manually along with all other inputs
+                flake.setNixPath = false; # ditto
+              };
+            }
+          ]
+          ++ opt isWSL inputs.nixos-wsl.nixosModules.wsl;
       };
   in {
     packages =
@@ -216,8 +215,8 @@
         isDarwin = true;
       };
     };
-    templates = builtins.mapAttrs (name: _type: {
-      path = ./shells/${name};
-    }) (builtins.readDir ./shells);
+    # templates = builtins.mapAttrs (name: _type: {
+    #   path = ./shells/${name};
+    # }) (builtins.readDir ./shells);
   };
 }

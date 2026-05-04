@@ -14,7 +14,7 @@ in {
   imports = [
     inputs.sops-nix.nixosModules.sops
     inputs.nix-index-database.nixosModules.nix-index
-    inputs.home-manager.nixosModules.home-manager
+    inputs.hjem.nixosModules.hjem
     ../module/nvidia.nix
   ];
   programs.nh = {

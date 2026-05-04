@@ -1,5 +1,5 @@
-_: {
-  home.file.".docker/config.json".text = ''
+{currentSystemUser, ...}: {
+  hjem.users.${currentSystemUser}.files.".docker/config.json".text = ''
     {
       "auths": {},
       "credHelpers": {
