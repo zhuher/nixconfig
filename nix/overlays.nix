@@ -4,43 +4,6 @@ in {
   # zig = final.zigpkgs."0_16_0";
   # zls = final.zigpkgs.zls-master;
 
-  bat-wrapped = with final;
-    symlinkJoin {
-      name = "bat-wrapped";
-      paths = [bat];
-      nativeBuildInputs = [makeBinaryWrapper];
-      postBuild = ''
-        wrapProgram $out/bin/bat --set-default \
-        BAT_CONFIG_PATH ${../configs/bat}
-      '';
-    };
-
-  tmux-wrapped = with final;
-    symlinkJoin {
-      name = "tmux";
-      paths = [tmux];
-      nativeBuildInputs = [makeBinaryWrapper];
-      postBuild = ''
-        wrapProgram $out/bin/tmux \
-        --add-flags '-f' \
-        --add-flags \
-        ${../configs/tmux.conf}
-      '';
-    };
-
-  nvim-wrapped = with final;
-    symlinkJoin {
-      name = "nvim";
-      paths = [neovim-unwrapped];
-      nativeBuildInputs = [makeBinaryWrapper];
-      postBuild = ''
-        wrapProgram $out/bin/nvim \
-        --add-flags '-u' \
-        --add-flags '${../configs/nvim.lua}' \
-        --prefix PATH : ${final.lib.makeBinPath (with final; [git emmylua-ls])}
-      '';
-    };
-
   # turns a list of [ [ "srcPath1" "dstPath1" ] [ "srcPath2" "dstPath2" ] ] into a mkdir and ln of dst to src script
   linkFiles = fileList:
     builtins.concatStringsSep "" (builtins.map (lk: let
@@ -70,6 +33,43 @@ in {
       ${body}
       echo -e "\033[32m${msg}... Done.\033[0m"
     '';
+
+    bat-wrapped = with final;
+      symlinkJoin {
+        name = "bat-wrapped";
+        paths = [bat];
+        nativeBuildInputs = [makeBinaryWrapper];
+        postBuild = ''
+          wrapProgram $out/bin/bat --set-default \
+          BAT_CONFIG_PATH ${../configs/bat}
+        '';
+      };
+
+    tmux-wrapped = with final;
+      symlinkJoin {
+        name = "tmux";
+        paths = [tmux];
+        nativeBuildInputs = [makeBinaryWrapper];
+        postBuild = ''
+          wrapProgram $out/bin/tmux \
+          --add-flags '-f' \
+          --add-flags \
+          ${../configs/tmux.conf}
+        '';
+      };
+
+    nvim-wrapped = with final;
+      symlinkJoin {
+        name = "nvim";
+        paths = [neovim-unwrapped];
+        nativeBuildInputs = [makeBinaryWrapper];
+        postBuild = ''
+          wrapProgram $out/bin/nvim \
+          --add-flags '-u' \
+          --add-flags '${../configs/nvim.lua}' \
+          --prefix PATH : ${final.lib.makeBinPath (with final; [git emmylua-ls])}
+        '';
+      };
 
     syncthing =
       fcp (
@@ -566,7 +566,8 @@ in {
           withSmallJaDic = true;
           # withCompressInstall ? true,
         }; # fcp "${final.helix}/grammars.nix" {};
-      in ((final.emacsPackagesFor
+      in (
+        (final.emacsPackagesFor
           ({
             "aarch64-darwin" =
               epkg.overrideAttrs
@@ -649,9 +650,13 @@ in {
             "x86_64-linux" = epkg;
           }."${final.stdenv.hostPlatform.system}")).emacsWithPackages
         (epkgs:
-          with epkgs; [
-            treesit-grammars.with-all-grammars
-          ]))
+          # with epkgs;
+          # [
+          #   # treesit-grammars.with-all-grammars
+          # ]
+          # ++
+          (builtins.filter (x: !builtins.isBool x) (final.lib.attrsets.attrValues final.tree-sitter-grammars)))
+      )
       # .override (old: {
       # stdenv = final.zig.stdenv;
       # old.stdenv.override {

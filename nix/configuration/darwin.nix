@@ -5,8 +5,7 @@
   currentSystemUser,
   inputs,
   ...
-}
-: let
+}: let
   env = config.environment.variables;
 in {
   zhuk.lixVer = "latest";
@@ -15,6 +14,8 @@ in {
     inputs.nix-index-database.darwinModules.nix-index
     inputs.nix-homebrew.darwinModules.nix-homebrew
     inputs.hjem.darwinModules.hjem
+    inputs.nvf.darwinModules.nvf
+    ../module/nvim.nix
     {
       nix-homebrew = {
         enable = true;
@@ -111,8 +112,7 @@ in {
                 );
               wantURIs = concatMapStrings (entry: "${entryURI entry.path}\n") cfg.entries;
               createEntries =
-                concatMapStrings
-                (
+                concatMapStrings (
                   entry: "${dockutil} --no-restart --add '${entry.path}' --section ${entry.section} ${entry.options}\n"
                 )
                 cfg.entries;
@@ -176,24 +176,28 @@ in {
       "StrongBox" = 1481853033;
     };
   };
-  launchd.user.agents.zhukmacs.serviceConfig = let
-    zsh = lib.getExe pkgs.zsh;
-    emacs = lib.getExe' pkgs.zhuk.emacs "emacs";
-  in {
-    AbandonProcessGroup = false;
-    Disabled = false;
-    KeepAlive = true;
-    Label = "zhuk.gnu.emacs.daemon";
-    ProcessType = "Adaptive";
-    RunAtLoad = true;
-    StandardOutPath = "${env.HOME}/Library/Logs/Zhukmacs.log";
-    StandardErrorPath = "${env.HOME}/Library/Logs/Zhukmacs-Errors.log";
-    EnvironmentVariables = {"NONU" = "1";};
-    ProgramArguments = [
-      "${zsh}"
-      "-ilc"
-      "${emacs} --fg-daemon"
-    ];
+  launchd.user.agents = lib.mkIf config.zhuk.emacs.enable {
+    zhukmacs.serviceConfig = let
+      zsh = lib.getExe pkgs.zsh;
+      emacs = lib.getExe' pkgs.zhuk.emacs "emacs";
+    in {
+      AbandonProcessGroup = false;
+      Disabled = false;
+      KeepAlive = true;
+      Label = "zhuk.gnu.emacs.daemon";
+      ProcessType = "Adaptive";
+      RunAtLoad = true;
+      StandardOutPath = "${env.HOME}/Library/Logs/Zhukmacs.log";
+      StandardErrorPath = "${env.HOME}/Library/Logs/Zhukmacs-Errors.log";
+      EnvironmentVariables = {
+        "NONU" = "1";
+      };
+      ProgramArguments = [
+        "${zsh}"
+        "-ilc"
+        "${emacs} --fg-daemon"
+      ];
+    };
   };
   system = {
     primaryUser = "${currentSystemUser}";
@@ -295,7 +299,7 @@ in {
       };
       finder = {
         # NewWindowTargetPath # url-escaped file:/// uri
-        NewWindowTarget = "Computer"; #, “OS volume”, “Home”, “Desktop”, “Documents”, “Recents”, “iCloud Drive”, “Other”
+        NewWindowTarget = "Computer"; # , “OS volume”, “Home”, “Desktop”, “Documents”, “Recents”, “iCloud Drive”, “Other”
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
         FXDefaultSearchScope = "SCcf";
@@ -392,7 +396,6 @@ in {
     home = "/Users/${currentSystemUser}";
   };
   environment.systemPackages = with pkgs; [
-    zhuk.emacs
     ghostty-bin
     iina
     monitorcontrol
@@ -417,8 +420,18 @@ in {
       automatic = false;
     };
     settings = {
-      extra-sandbox-paths = ["/usr/bin/strip" "/usr/bin/codesign"];
-      allowed-impure-host-deps = ["/bin/sh" "/usr/lib/libSystem.B.dylib" "/usr/lib/system/libunc.dylib" "/dev/zero" "/dev/random" "/dev/urandom"];
+      extra-sandbox-paths = [
+        "/usr/bin/strip"
+        "/usr/bin/codesign"
+      ];
+      allowed-impure-host-deps = [
+        "/bin/sh"
+        "/usr/lib/libSystem.B.dylib"
+        "/usr/lib/system/libunc.dylib"
+        "/dev/zero"
+        "/dev/random"
+        "/dev/urandom"
+      ];
     };
     gc.automatic = false;
   };

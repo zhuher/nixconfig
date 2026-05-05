@@ -15,6 +15,8 @@ in {
     inputs.sops-nix.nixosModules.sops
     inputs.nix-index-database.nixosModules.nix-index
     inputs.hjem.nixosModules.hjem
+    inputs.nvf.nixosModules.nvf
+    ../module/nvim.nix
     ../module/nvidia.nix
   ];
   programs.nh = {

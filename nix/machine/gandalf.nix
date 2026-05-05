@@ -7,6 +7,7 @@
 }: let
   env = config.environment.variables;
 in {
+  zhuk.nvim.own = false;
   nix.settings = {
     extra-substituters = [
       "https://nix-community.cachix.org"
@@ -116,6 +117,7 @@ in {
     };
   };
   environment.systemPackages = with pkgs; [
+    cachix
     # cataclysm-dda-git
     crawl
     zhuk.monero-cli

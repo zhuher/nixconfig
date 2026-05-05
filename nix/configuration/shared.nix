@@ -29,7 +29,7 @@ in {
             };
             ui = {
               default_command = ["log" "--no-pager" "--limit=6"];
-              diff-editor = ["${lib.getExe' pkgs.nvim-wrapped "nvim"}" "-c" "DiffEditor $left $right $output"];
+              diff-editor = ["${lib.getExe' config.zhuk.nvim.package "nvim"}" "-c" "DiffEditor $left $right $output"];
               pager = "${lib.getExe delta}";
               diff-formatter = ":git";
             };
@@ -91,7 +91,7 @@ in {
             nativeBuildInputs = [makeBinaryWrapper];
             postBuild = ''
               wrapProgram $out/bin/jj \
-              --prefix PATH : ${final.lib.makeBinPath (with final; [delta nvim-wrapped])} \
+              --prefix PATH : ${final.lib.makeBinPath (with final; [delta config.zhuk.nvim.package])} \
               --prefix JJ_CONFIG : "${jjconf}" ${
                 lib.optionalString
                 config.zhuk.jj.secrets
@@ -476,7 +476,7 @@ in {
         gnugrep
         age
         alejandra
-        bat-wrapped
+        zhuk.bat-wrapped
         coreutils
         delta
         (writeShellScriptBin "devinit" ''nix flake init -t ${env.NH_FLAKE}#$1 && cp ${env.NH_FLAKE}/shells/$1/.envrc{,.local} ./'')
@@ -489,12 +489,12 @@ in {
         just
         nh
         lpkgs.nil
-        nvim-wrapped
+        config.zhuk.nvim.package
         ripgrep
         rsync
         sops
         ssh-to-age
-        tmux-wrapped
+        zhuk.tmux-wrapped
         wget
         zoxide
         grc
@@ -525,7 +525,7 @@ in {
         jjl = "jj log -r '@ | ancestors(immutable_heads()..) | trunk()' --no-pager --limit=6";
         mv = "mv -iv";
         nv = "nvim";
-        nvi = ''${getExe' pkgs.nvim-wrapped "nvim"} -u "${env.NH_FLAKE}/configs/nvim.lua"'';
+        # nvi = ''${getExe' pkgs.zhuk.nvim-wrapped "nvim"} -u "${env.NH_FLAKE}/configs/nvim.lua"'';
         rm = "rm -irv";
         tmux = "TERM=xterm-256color tmux";
         # make sudo use aliases (https://github.com/sukhmancs/nixos-configs/blob/c4dbf10fb95f3237130a0b1a899a688ca9c77d32/machines/nebula/homes/zsh/aliases.nix#L12)
@@ -540,7 +540,7 @@ in {
       # {{{
       let
         flake-path = builtins.readFile inputs.flake-path.outPath;
-        nvimexe = getExe' pkgs.nvim-wrapped "nvim";
+        nvimexe = getExe' config.zhuk.nvim.package "nvim";
       in rec {
         NIXPKGS_REV = "e75f25705c2934955ee5075e62530d74aca973c6";
         PAGER = "${pkgs.delta}/bin/delta";

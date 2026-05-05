@@ -19,6 +19,7 @@
       # Build a custom WSL installer
       url = "github:nix-community/NixOS-WSL"; # "/bc827c2924c46f2344d3168fd82c6711aaceb610"; # next commit broke mount root regex check
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-compat.follows = "nvf/flake-compat";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -31,6 +32,10 @@
     hjem = {
       url = "github:feel-co/hjem";
       inputs.nix-darwin.follows = "nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nvf = {
+      url = "github:NotAShelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
@@ -66,11 +71,12 @@
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "nvf/flake-parts";
     };
-    zig-overlay = {
-      url = "github:bandithedoge/zig-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # zig-overlay = {
+    #   url = "github:bandithedoge/zig-overlay";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     gwfox = {
       url = "github:akkva/gwfox";
       flake = false;
@@ -93,7 +99,7 @@
       inputs.emacs-overlay.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       inputs.sops-nix.overlays.default
-      inputs.zig-overlay.overlays.default
+      # inputs.zig-overlay.overlays.default
       (import ./nix/overlays.nix)
     ];
     supportedSystems = [
@@ -158,8 +164,8 @@
       forEachSupportedSystem
       overlays (
         {pkgs, ...}: {
-          nvim = pkgs.nvim-wrapped;
-          tmux = pkgs.tmux-wrapped;
+          nvim = pkgs.zhuk.nvim-wrapped;
+          tmux = pkgs.zhuk.tmux-wrapped;
         }
       );
     formatter = forEachSupportedSystem [] (
@@ -197,11 +203,11 @@
         system = "x86_64-linux";
         user = "zhuher";
       };
-      wsl = mkSystem "wsl" {
-        system = "x86_64-linux";
-        user = "zhuher";
-        isWSL = true;
-      };
+      # wsl = mkSystem "wsl" {
+      #   system = "x86_64-linux";
+      #   user = "zhuher";
+      #   isWSL = true;
+      # };
     };
     darwinConfigurations = {
       macbook-KY7WHGYV1Y = mkSystem "macbook-KY7WHGYV1Y" {
