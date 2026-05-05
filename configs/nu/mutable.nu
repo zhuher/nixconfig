@@ -100,7 +100,7 @@ let external_completer = {|spans|
     }
 
     match $spans.0 {
-        launchctl => $fish_completer
+        launchctl | sops => $fish_completer
         _ => $carapace_completer
     } | do $in $spans
 }
