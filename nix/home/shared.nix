@@ -55,9 +55,7 @@
         alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short
         alias canihazip4 = ${dig} @resolver4.opendns.com myip.opendns.com +short -4
         ${lib.optionalString isDarwin ''
-          alias nu-open = open
-          alias open = ^open
-          alias emg = open -a EmacsClient
+          alias emg = ^open -a EmacsClient
         ''}
         use std/config *
         # Initialize the PWD hook as an empty list if it doesn't exist
