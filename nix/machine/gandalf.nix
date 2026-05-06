@@ -7,7 +7,6 @@
 }: let
   env = config.environment.variables;
 in {
-  zhuk.nvim.own = false;
   nix.settings = {
     extra-substituters = [
       "https://nix-community.cachix.org"

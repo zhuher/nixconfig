@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }:
@@ -13,29 +12,158 @@ lib.mkIf (!config.zhuk.nvim.own) {
         keymaps = [
           {
             key = "<leader>q";
-            mode = ["n"];
+            mode = [ "n" ];
             silent = true;
             action = "<cmd>q<CR>";
           }
           {
             key = "<leader>x";
-            mode = ["n"];
+            mode = [ "n" ];
             silent = true;
             action = "<cmd>x<CR>";
           }
           {
             key = "<leader>w";
-            mode = ["n"];
+            mode = [ "n" ];
             silent = true;
             action = "<cmd>w<CR>";
           }
           {
+            key = "<leader>b";
+            action = "<Nop>";
+            desc = "Buffers";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            mode = [
+              "n"
+              "v"
+            ];
+            key = "<leader>bn";
+            action = "<cmd>bnext<CR>";
+            desc = "Go to next buffer";
+          }
+          {
+            mode = [
+              "n"
+              "v"
+            ];
+            key = "<leader>bp";
+            action = "<cmd>bprevious<CR>";
+            desc = "Go to previous buffer";
+          }
+          {
+            mode = [
+              "n"
+              "v"
+            ];
+            key = "<leader>bd";
+            action = "<cmd>bdelete<CR>";
+            desc = "Delete buffer";
+          }
+        ]
+        ++ lib.optionals config.programs.nvf.settings.vim.fzf-lua.enable [
+          {
+            key = "<leader>f";
+            action = "<Nop>";
+            desc = "Fzf";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader><leader>";
+            action = "<cmd>FzfLua files<CR>";
+            desc = "Fuzzy find files";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>g";
+            action = "<cmd>FzfLua live_grep<CR>";
+            desc = "Live grep in files";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>fb";
+            action = "<cmd>FzfLua buffers<CR>";
+            desc = "Fuzzy find buffers";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>fh";
+            action = "<cmd>FzfLua help_tags<CR>";
+            desc = "Fuzzy find help tags";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "t";
+            action = "<cmd>FzfLua tabs<CR>";
+            desc = "Fuzzy find tabs";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
             key = "<leader>fl";
-            desc = "Telescope fuzzy find this buffer";
-            mode = ["n"];
-            silent = true;
-            nowait = true;
-            action = "<cmd>Telescope current_buffer_fuzzy_find<CR>";
+            action = "<cmd>FzfLua blines<CR>";
+            desc = "Fuzzy find current line buffers";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>bc";
+            action = "<cmd>FzfLua lsp_document_diagnostics<CR>";
+            desc = "Fuzzy find current buffer diagnostics";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>r";
+            action = "<cmd>FzfLua oldfiles<CR>";
+            desc = "Fuzzy find recent files";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>ts";
+            action = "<cmd>FzfLua lsp_workspace_symbols<CR>";
+            desc = "Fuzzy find workspace symbols";
+            mode = [
+              "n"
+              "v"
+            ];
+          }
+          {
+            key = "<leader>fwd";
+            action = "<cmd>FzfLua diagnostics_workspace<CR>";
+            desc = "Fuzzy find diagnostics";
+            mode = [
+              "n"
+              "v"
+            ];
           }
         ];
         autocomplete = {
@@ -49,28 +177,9 @@ lib.mkIf (!config.zhuk.nvim.own) {
           indent.enable = true;
           context.enable = true;
         };
-        telescope = {
+        fzf-lua = {
           enable = true;
-          extensions = [
-            {
-              name = "fzf";
-              packages = [pkgs.vimPlugins.telescope-fzf-native-nvim];
-              setup = {
-                fzf = {
-                  fuzzy = true;
-                };
-              };
-            }
-          ];
-          mappings = {
-            findFiles = "<leader><leader>";
-            diagnostics = "<leader>fwd";
-            lspDocumentSymbols = "<leader>fds";
-            lspReferences = "<leader>fdr";
-            lspTypeDefinitions = "<leader>fdt";
-            lspWorkspaceSymbols = "<leader>fws";
-            liveGrep = "<leader>g";
-          };
+          profile = "max-perf";
         };
         mini.icons.enable = true;
         visuals = {
@@ -93,7 +202,12 @@ lib.mkIf (!config.zhuk.nvim.own) {
           };
           fastaction.enable = true;
           illuminate.enable = true;
-          modes-nvim.enable = true;
+          modes-nvim = {
+            enable = true;
+            setupOpts = {
+              setCursorline = true;
+            };
+          };
           noice = {
             enable = true;
           };
@@ -109,7 +223,6 @@ lib.mkIf (!config.zhuk.nvim.own) {
         binds = {
           whichKey.enable = true;
           cheatsheet.enable = true;
-          # hardtime-nvim.enable = true;
         };
         formatter.conform-nvim.enable = true;
         lsp = {
@@ -129,9 +242,8 @@ lib.mkIf (!config.zhuk.nvim.own) {
           nu.enable = true;
         };
         options = {
-          termguicolors = false;
+          termguicolors = true;
           foldlevel = 69420;
-          cursorline = true;
         };
       };
     };

@@ -62,6 +62,7 @@ g.loaded_perl_provider = 0
 g.loaded_netrw = 1
 g.loaded_netrwPlugin = 1
 vo.hlsearch = true -- highlight all search matches
+vo.foldlevel = 69420;
 -- vo.omnifunc = [[vim.lsp.omnifunc]]
 o.guicursor =      -- gui cursor settings
 [[n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175]]
@@ -94,8 +95,8 @@ vim.diagnostic.config(diag_opts)
 vim.api.nvim_set_hl(0, "CursorColumn", { reverse = true })
 vim.api.nvim_set_hl(0, "CursorLineNr", { reverse = true })
 vim.api.nvim_set_hl(0, "CursorLine", { reverse = true })
-vim.api.nvim_set_hl(0, "Comment", { italic = true })
-vim.api.nvim_set_hl(0, "LspInlayHint", { link = "Comment" })
+vim.api.nvim_set_hl(0, "Comment", { dim = true, italic = true })
+vim.api.nvim_set_hl(0, "LspInlayHint", { link = "Comment",  })
 local function map(mode, lhs, rhs, desc, opts)
   local options = { noremap = true, silent = true, desc = desc }
   if opts then options = vim.tbl_extend('force', options, opts) end
@@ -684,7 +685,7 @@ local fzf_lua = {
     },
     {
       "<leader>g",
-      "<cmd>FzfLua grep<CR>",
+      "<cmd>FzfLua live_grep<CR>",
       desc = "Fuzzy find in files",
       mode = { "n", "v" },
     },
