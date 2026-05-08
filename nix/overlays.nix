@@ -566,9 +566,9 @@ in {
           withSmallJaDic = true;
           # withCompressInstall ? true,
         }; # fcp "${final.helix}/grammars.nix" {};
-      in (
+      in
         (final.emacsPackagesFor
-          ({
+          {
             "aarch64-darwin" =
               epkg.overrideAttrs
               (old: {
@@ -648,15 +648,16 @@ in {
                   ];
               });
             "x86_64-linux" = epkg;
-          }."${final.stdenv.hostPlatform.system}")).emacsWithPackages
-        (epkgs:
+          }."${final.stdenv.hostPlatform.system}").emacsWithPackages
+        (
+          _epkgs:
           # with epkgs;
           # [
           #   # treesit-grammars.with-all-grammars
           # ]
           # ++
-          (builtins.filter (x: !builtins.isBool x) (final.lib.attrsets.attrValues final.tree-sitter-grammars)))
-      )
+          (builtins.filter (x: !builtins.isBool x) (final.lib.attrsets.attrValues final.tree-sitter-grammars)) # doesn't seem to work
+        )
       # .override (old: {
       # stdenv = final.zig.stdenv;
       # old.stdenv.override {

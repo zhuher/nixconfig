@@ -19,7 +19,7 @@
       # Build a custom WSL installer
       url = "github:nix-community/NixOS-WSL"; # "/bc827c2924c46f2344d3168fd82c6711aaceb610"; # next commit broke mount root regex check
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-compat.follows = "nvf/flake-compat";
+      # inputs.flake-compat.follows = "nvf/flake-compat";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -34,10 +34,10 @@
       inputs.nix-darwin.follows = "nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nvf = {
-      url = "github:NotAShelf/nvf";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # nvf = {
+    #   url = "github:NotAShelf/nvf";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
@@ -71,7 +71,7 @@
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-parts.follows = "nvf/flake-parts";
+      # inputs.flake-parts.follows = "nvf/flake-parts";
     };
     # zig-overlay = {
     #   url = "github:bandithedoge/zig-overlay";

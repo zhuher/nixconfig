@@ -14,8 +14,8 @@ in {
     inputs.nix-index-database.darwinModules.nix-index
     inputs.nix-homebrew.darwinModules.nix-homebrew
     inputs.hjem.darwinModules.hjem
-    inputs.nvf.darwinModules.nvf
-    ../module/nvim.nix
+    # inputs.nvf.darwinModules.nvf
+    # ../module/nvim.nix
     {
       nix-homebrew = {
         enable = true;

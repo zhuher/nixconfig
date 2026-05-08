@@ -9,163 +9,164 @@ lib.mkIf (!config.zhuk.nvim.own) {
     enableManpages = true;
     settings = {
       vim = {
-        keymaps = [
-          {
-            key = "<leader>q";
-            mode = [ "n" ];
-            silent = true;
-            action = "<cmd>q<CR>";
-          }
-          {
-            key = "<leader>x";
-            mode = [ "n" ];
-            silent = true;
-            action = "<cmd>x<CR>";
-          }
-          {
-            key = "<leader>w";
-            mode = [ "n" ];
-            silent = true;
-            action = "<cmd>w<CR>";
-          }
-          {
-            key = "<leader>b";
-            action = "<Nop>";
-            desc = "Buffers";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            mode = [
-              "n"
-              "v"
-            ];
-            key = "<leader>bn";
-            action = "<cmd>bnext<CR>";
-            desc = "Go to next buffer";
-          }
-          {
-            mode = [
-              "n"
-              "v"
-            ];
-            key = "<leader>bp";
-            action = "<cmd>bprevious<CR>";
-            desc = "Go to previous buffer";
-          }
-          {
-            mode = [
-              "n"
-              "v"
-            ];
-            key = "<leader>bd";
-            action = "<cmd>bdelete<CR>";
-            desc = "Delete buffer";
-          }
-        ]
-        ++ lib.optionals config.programs.nvf.settings.vim.fzf-lua.enable [
-          {
-            key = "<leader>f";
-            action = "<Nop>";
-            desc = "Fzf";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader><leader>";
-            action = "<cmd>FzfLua files<CR>";
-            desc = "Fuzzy find files";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>g";
-            action = "<cmd>FzfLua live_grep<CR>";
-            desc = "Live grep in files";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>fb";
-            action = "<cmd>FzfLua buffers<CR>";
-            desc = "Fuzzy find buffers";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>fh";
-            action = "<cmd>FzfLua help_tags<CR>";
-            desc = "Fuzzy find help tags";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "t";
-            action = "<cmd>FzfLua tabs<CR>";
-            desc = "Fuzzy find tabs";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>fl";
-            action = "<cmd>FzfLua blines<CR>";
-            desc = "Fuzzy find current line buffers";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>bc";
-            action = "<cmd>FzfLua lsp_document_diagnostics<CR>";
-            desc = "Fuzzy find current buffer diagnostics";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>r";
-            action = "<cmd>FzfLua oldfiles<CR>";
-            desc = "Fuzzy find recent files";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>ts";
-            action = "<cmd>FzfLua lsp_workspace_symbols<CR>";
-            desc = "Fuzzy find workspace symbols";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-          {
-            key = "<leader>fwd";
-            action = "<cmd>FzfLua diagnostics_workspace<CR>";
-            desc = "Fuzzy find diagnostics";
-            mode = [
-              "n"
-              "v"
-            ];
-          }
-        ];
+        keymaps =
+          [
+            {
+              key = "<leader>q";
+              mode = ["n"];
+              silent = true;
+              action = "<cmd>q<CR>";
+            }
+            {
+              key = "<leader>x";
+              mode = ["n"];
+              silent = true;
+              action = "<cmd>x<CR>";
+            }
+            {
+              key = "<leader>w";
+              mode = ["n"];
+              silent = true;
+              action = "<cmd>w<CR>";
+            }
+            {
+              key = "<leader>b";
+              action = "<Nop>";
+              desc = "Buffers";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              mode = [
+                "n"
+                "v"
+              ];
+              key = "<leader>bn";
+              action = "<cmd>bnext<CR>";
+              desc = "Go to next buffer";
+            }
+            {
+              mode = [
+                "n"
+                "v"
+              ];
+              key = "<leader>bp";
+              action = "<cmd>bprevious<CR>";
+              desc = "Go to previous buffer";
+            }
+            {
+              mode = [
+                "n"
+                "v"
+              ];
+              key = "<leader>bd";
+              action = "<cmd>bdelete<CR>";
+              desc = "Delete buffer";
+            }
+          ]
+          ++ lib.optionals config.programs.nvf.settings.vim.fzf-lua.enable [
+            {
+              key = "<leader>f";
+              action = "<Nop>";
+              desc = "Fzf";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader><leader>";
+              action = "<cmd>FzfLua files<CR>";
+              desc = "Fuzzy find files";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>g";
+              action = "<cmd>FzfLua live_grep<CR>";
+              desc = "Live grep in files";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>fb";
+              action = "<cmd>FzfLua buffers<CR>";
+              desc = "Fuzzy find buffers";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>fh";
+              action = "<cmd>FzfLua help_tags<CR>";
+              desc = "Fuzzy find help tags";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "t";
+              action = "<cmd>FzfLua tabs<CR>";
+              desc = "Fuzzy find tabs";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>fl";
+              action = "<cmd>FzfLua blines<CR>";
+              desc = "Fuzzy find current line buffers";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>bc";
+              action = "<cmd>FzfLua lsp_document_diagnostics<CR>";
+              desc = "Fuzzy find current buffer diagnostics";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>r";
+              action = "<cmd>FzfLua oldfiles<CR>";
+              desc = "Fuzzy find recent files";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>ts";
+              action = "<cmd>FzfLua lsp_workspace_symbols<CR>";
+              desc = "Fuzzy find workspace symbols";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+            {
+              key = "<leader>fwd";
+              action = "<cmd>FzfLua diagnostics_workspace<CR>";
+              desc = "Fuzzy find diagnostics";
+              mode = [
+                "n"
+                "v"
+              ];
+            }
+          ];
         autocomplete = {
           blink-cmp = {
             enable = true;

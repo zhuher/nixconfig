@@ -15,7 +15,7 @@
   reportSpec = builtins.trace specMsg;
 in {
   nixpkgs.overlays = [
-    (final: prev:
+    (final: _prev:
       with final; {
         # jujutsu-wrapped {{{
         jujutsu-wrapped = let

@@ -35,11 +35,10 @@ use "awg-quick extern" "awg-quick up"
 use "awg-quick extern" "awg-quick down"
 alias "aa up" = awg-quick up
 alias "aa down" = awg-quick down
-def "nu-complete nuconfig" [input] {
-    let spans = $input | str replace "n" $"just --justfile=($env.NH_FLAKE)/justfile" | split row " "
-    do $env.config.completions.external.completer $spans
+def "nu-complete nixconfig" [context: string] {
+    do $env.config.completions.external.completer ($context | str trim --left | split row " " | skip 1 | prepend $"--justfile=($env.NH_FLAKE)/justfile" | prepend just)
 }
-def n [...rest: string@"nu-complete nuconfig"] {
+def --wrapped n [...rest: string@"nu-complete nixconfig"] {
   ^just $"--justfile=($env.NH_FLAKE)/justfile" ...$rest
 }
 def "nu-complete zoxide path" [context: string] {
@@ -73,7 +72,7 @@ def "nu-complete zoxide path" [context: string] {
 def --env --wrapped cd [...rest: string@"nu-complete zoxide path"] {
   __zoxide_z ...$rest
 }
-let fish_completer = {|spans|
+let fish_completer = {|spans: list<string>|
     fish --command $"complete '--do-complete=($spans | str replace --all "'" "\\'" | str join ' ')'"
     | from tsv --flexible --noheaders
     | rename value description
@@ -86,21 +85,30 @@ let fish_completer = {|spans|
       } else {$value}
     }
 }
-let external_completer = {|spans|
+let carapace_completer = {|spans: list<string>|
+    CARAPACE_LENIENT=1 carapace $spans.0 nushell ...$spans | from json
+}
+let external_completer = {|spans: list<string>|
     let expanded_alias = scope aliases
     | where name == $spans.0
     | get -o 0.expansion
 
-    let spans = if $expanded_alias != null {
+    let spans = (if $expanded_alias != null {
         $spans
         | skip 1
         | prepend ($expanded_alias | split row ' ' | take 1)
     } else {
         $spans
+    }) | match $in.0 {
+      ',' => ($spans | skip)
+      _ => $spans
     }
 
     match $spans.0 {
-        launchctl | sops => $fish_completer
+        launchctl
+        | sops
+        | jj
+        => $fish_completer
         _ => $carapace_completer
     } | do $in $spans
 }
@@ -123,9 +131,9 @@ $env.config = {
     algorithm: "fuzzy"    # prefix or fuzzy
     external: {
       # set to false to prevent nushell looking into $env.PATH to find more suggestions
-      enable: true 
+      enable: true
       # set to lower can improve completion performance at the cost of omitting some options
-      # max_results: 10000 
+      # max_results: 10000
       completer: $external_completer
     }
   }

@@ -684,9 +684,15 @@ local fzf_lua = {
       mode = { "n", "v" },
     },
     {
-      "<leader>g",
+      "<leader>lg",
       "<cmd>FzfLua live_grep<CR>",
-      desc = "Fuzzy find in files",
+      desc = "Fuzzy live grep in files",
+      mode = { "n", "v" },
+    },
+    {
+      "<leader>g",
+      "<cmd>FzfLua grep<CR>",
+      desc = "Fuzzy grep in files",
       mode = { "n", "v" },
     },
     {

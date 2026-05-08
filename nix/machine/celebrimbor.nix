@@ -15,7 +15,7 @@ in {
       specListWD = ["Default"] ++ specList;
       specIdx = lib.lists.findFirstIndex (name: name == specName) 0 specListWD;
     in "default_entry: ${builtins.toString (specIdx + 3)}";
-    mkSpec = name: extraAttrs: {...} @ i:
+    mkSpec = name: extraAttrs: i:
       {
         zhuk._spec = name;
         environment.etc."specialisation".text = i.config.zhuk._spec; # for nh
