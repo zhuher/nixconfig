@@ -7,6 +7,7 @@
 }: let
   env = config.environment.variables;
 in {
+  zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
   services.openssh.enable = false;
   environment = {
     shellAliases = {
@@ -25,7 +26,6 @@ in {
         }
       '' "-O ReleaseSafe")
       sccache
-      jujutsu-wrapped
     ];
   };
   homebrew = {

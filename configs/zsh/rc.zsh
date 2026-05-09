@@ -1,8 +1,6 @@
 # shellcheck=zsh
 eval "$($DIRCOLORS_EXE)"
 HELPLDIR="$ZSH_DIR/share/zsh/$ZSH_VERSION/help"
-path+="$ZSH_FZF_TAB_DIR/share/fzf-tab"
-fpath+="$ZSH_FZF_TAB_DIR/share/fzf-tab"
 fpath+="$NH_FLAKE/configs/zsh/comp"
 
 autoload -Uz compinit
@@ -22,11 +20,8 @@ else
   compinit -C
 fi
 
-eval "$($ZOXIDE_EXE init zsh)"
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8,underline"
 ZSH_AUTOSUGGEST_STRATEGY=(history)
-
-source $ZSH_FZF_TAB_DIR/share/fzf-tab/fzf-tab.plugin.zsh
 
 source $ZSH_AUTOSUGGESTIONS_DIR/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
@@ -138,13 +133,10 @@ chmod 600 "$HISTFILE"
 setopt HIST_FCNTL_LOCK APPEND_HISTORY HIST_IGNORE_DUPS
 unsetopt HIST_IGNORE_ALL_DUPS HIST_SAVE_NO_DUPS HIST_FIND_NO_DUPS
 setopt HIST_IGNORE_SPACE HIST_EXPIRE_DUPS_FIRST SHARE_HISTORY EXTENDED_HISTORY
-if [[ $options[zle] = on ]]; then
-  source <($FZF_EXE --zsh)
-fi
 source $ZSH_HISTORY_SUBSTRING_SEARCH_DIR/share/zsh-history-substring-search/zsh-history-substring-search.zsh
 bindkey "^[[A" history-substring-search-up
 bindkey "^[[B" history-substring-search-down
-ed() { pushd "$($ZOXIDE_EXE query $1)"; $EDITOR; popd }
+# ed() { pushd "$($ZOXIDE_EXE query $1)"; $EDITOR; popd }
 if (( ! ${+NONU} )); then
   export NONU=1
   exec nu -il

@@ -38,39 +38,14 @@ alias "aa down" = awg-quick down
 def "nu-complete nixconfig" [context: string] {
     do $env.config.completions.external.completer ($context | str trim --left | split row " " | skip 1 | prepend $"--justfile=($env.NH_FLAKE)/justfile" | prepend just)
 }
-def --wrapped n [...rest: string@"nu-complete nixconfig"] {
+def n [...rest: string@"nu-complete nixconfig"] {
   ^just $"--justfile=($env.NH_FLAKE)/justfile" ...$rest
 }
-def "nu-complete zoxide path" [context: string] {
-    let parts = $context | str trim --left | split row " " | skip 1 | each { str downcase }
-    let completions = (
-        ^zoxide query --list --exclude $env.PWD -- ...$parts
-            | lines
-            | each { |dir|
-                if ($parts | length) <= 1 {
-                    $dir
-                } else {
-                    let dir_lower = $dir | str downcase
-                    let rem_start = $parts | drop 1 | reduce --fold 0 { |part, rem_start|
-                        ($dir_lower | str index-of --range $rem_start.. $part) + ($part | str length)
-                    }
-                    {
-                        value: ($dir | str substring $rem_start..),
-                        description: $dir
-                    }
-                }
-            })
-    {
-        options: {
-            sort: false,
-            completion_algorithm: substring,
-            case_sensitive: false,
-        },
-        completions: $completions,
-    }
+def "nu-complete cd" [context: string] {
+    do $env.config.completions.external.completer ($context | str trim --left | split row " " | skip 1 | prepend cd)
 }
-def --env --wrapped cd [...rest: string@"nu-complete zoxide path"] {
-  __zoxide_z ...$rest
+def --env --wrapped cd [...rest: string@"nu-complete cd"] {
+  z ...$rest
 }
 let fish_completer = {|spans: list<string>|
     fish --command $"complete '--do-complete=($spans | str replace --all "'" "\\'" | str join ' ')'"

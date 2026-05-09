@@ -34,6 +34,130 @@ in {
       echo -e "\033[32m${msg}... Done.\033[0m"
     '';
 
+    mkJujutsu-wrapped = withSecrets: secretsPath: nvimPkg:
+      with final; let
+        jjconf = (formats.toml {}).generate "jj.toml" {
+          colors."commit_id prefix".bold = true;
+          revsets.log = ''@ | ancestors(immutable_heads()..) | trunk()'';
+          template-aliases = {
+            "format_short_id(id)" = "id.shortest()";
+            "format_timestamp(timestamp)" = ''timestamp ++ "(" ++ timestamp.ago() ++ ")"'';
+          };
+          ui = {
+            default_command = ["log" "--limit=6" "-T" "builtin_log_detailed"];
+            pager = "${lib.getExe delta}";
+            diff-formatter = ":git";
+          };
+          templates = {
+            log_node = ''
+              coalesce(
+                if(!self, "🮀"),
+                if(current_working_copy, "@"),
+                if(root, "┴"),
+                if(immutable, "●", "○"),
+              )'';
+          };
+          op_log_node = ''if(current_operation, "@", "○")'';
+          snapshot.max-new-file-size = 16777216;
+          aliases = {
+            my-inline-script = [
+              "util"
+              "exec"
+              "--"
+              "bash"
+              "-c"
+              ''
+                #!/usr/bin/env bash
+                set -euo pipefail
+                echo "Look Ma, everything in one file!"
+                echo "args: $@"
+              ''
+              ""
+            ];
+            yolo = [
+              "util"
+              "exec"
+              "--"
+              "bash"
+              "-c"
+              ''
+                jj desc -m "$(curl -s "https://whatthecommit.com/index.txt")"
+              ''
+              ""
+            ];
+            pull-subs = [
+              "util"
+              "exec"
+              "--"
+              "bash"
+              "-c"
+              ''
+                git submodule update --recursive --init
+              ''
+              ""
+            ];
+          };
+        };
+      in
+        symlinkJoin {
+          name = "jujutsu-wrapped";
+          paths = [jujutsu];
+          nativeBuildInputs = [makeBinaryWrapper];
+          postBuild = ''
+            wrapProgram $out/bin/jj \
+            --prefix PATH : ${final.lib.makeBinPath (with final; [delta nvimPkg])} \
+            --prefix JJ_CONFIG : "${jjconf}" ${
+              lib.optionalString withSecrets
+              ''--prefix JJ_CONFIG : "${secretsPath}"''
+            }
+          '';
+        };
+
+    gnupg-wrapped = let
+      mapArgs = args: let
+        lines = builtins.filter (el: !(builtins.isList el || el == "")) (builtins.split "\n" args);
+        words = builtins.filter (el: !builtins.isList el) (builtins.concatLists (builtins.map (line: builtins.split " " line) lines));
+        flags = map (w: "--add-flags " + w) words;
+        result = builtins.concatStringsSep " " flags;
+      in
+        result;
+      mappedArgs = mapArgs ''
+        --list-options show-photos,show-usage,show-ownertrust,show-policy-urls,show-std-notations,show-keyserver-urls,show-uid-validity,show-unusable-uids,show-unusable-subkeys,show-unusable-sigs,show-keyring,show-sig-expire,show-sig-subpackets,sort-sigs
+        --display-charset utf-8
+        --compress-level 9
+        --bzip2-compress-level 9
+        --no-random-seed-file
+        --no-greeting
+        --require-secmem
+        --require-cross-certification
+        --expert
+        --armor
+        --with-fingerprint
+        --with-fingerprint
+        --with-subkey-fingerprint
+        --with-keygrip
+        --with-key-origin
+        --with-wkd-hash
+        --with-secret
+        --pinentry-mode loopback
+        --full-timestrings
+        --passphrase-repeat 4
+        --no-symkey-cache
+        --with-sig-list
+        --keyid-format 0xlong
+      '';
+    in
+      with final;
+        symlinkJoin {
+          name = "gnupg-wrapped";
+          paths = [gnupg];
+          nativeBuildInputs = [makeBinaryWrapper];
+          postBuild = ''
+            wrapProgram $out/bin/gpg \
+            ${mappedArgs}
+          '';
+        };
+
     bat-wrapped = with final;
       symlinkJoin {
         name = "bat-wrapped";

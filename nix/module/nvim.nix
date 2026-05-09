@@ -4,6 +4,7 @@
   ...
 }:
 lib.mkIf (!config.zhuk.nvim.own) {
+  zhuk.nvim.package = config.programs.nvf.settings.vim.build.finalPackage;
   programs.nvf = {
     enable = true;
     enableManpages = true;

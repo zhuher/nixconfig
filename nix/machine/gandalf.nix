@@ -7,6 +7,23 @@
 }: let
   env = config.environment.variables;
 in {
+  zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
+  environment.systemPackages = with pkgs; [
+    # freenet
+    cachix
+    # cataclysm-dda-git
+    crawl
+    zhuk.monero-cli
+    zhuk.thorium-browser
+    zhuk.tile-thumbnails
+    zhuk.alex313031-codium
+    qbittorrent
+    prismlauncher
+    libjxl
+    ice-bar # [ERROR] Crashes when using the floating ice bar.
+    appcleaner
+    zhuk.syncthing
+  ];
   nix.settings = {
     extra-substituters = [
       "https://nix-community.cachix.org"
@@ -115,21 +132,6 @@ in {
       };
     };
   };
-  environment.systemPackages = with pkgs; [
-    cachix
-    # cataclysm-dda-git
-    crawl
-    zhuk.monero-cli
-    zhuk.thorium-browser
-    zhuk.tile-thumbnails
-    zhuk.alex313031-codium
-    qbittorrent
-    prismlauncher
-    libjxl
-    ice-bar # [ERROR] Crashes when using the floating ice bar.
-    appcleaner
-    zhuk.syncthing
-  ];
   local.dock.entries = [
     {path = "/Applications/Safari.app";}
     {path = "/Applications/Moonlight.app";}
