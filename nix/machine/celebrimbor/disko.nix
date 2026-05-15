@@ -26,9 +26,9 @@
               type = "0700"; #gdisk
               content = {
                 type = "filesystem";
-                format = "ntfs"; # Mounts Windows C: drive
+                format = "ntfs";
                 mountpoint = "/windows";
-                mountOptions = ["nofail"]; # Read-only for safety
+                mountOptions = ["ro" "nofail"]; # Read-only for safety
               };
             };
 

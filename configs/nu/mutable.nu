@@ -116,7 +116,7 @@ $env.config = {
     command_not_found: {
       |cmd| (
         try {
-          let pkgs = (nix-locate --minimal $"bin/($cmd)"
+          let pkgs = (nix-locate --minimal -r $"bin/($cmd)$"
             | lines
             | each {
               |l|

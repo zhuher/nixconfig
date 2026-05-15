@@ -8,28 +8,12 @@
 }: let
   env = config.environment.variables;
 in {
-  specialisation = let
-    specList = builtins.attrNames config.specialisation;
-    mkDefaultEntry = c: let
-      specName = c.zhuk._spec;
-      specListWD = ["Default"] ++ specList;
-      specIdx = lib.lists.findFirstIndex (name: name == specName) 0 specListWD;
-    in "default_entry: ${builtins.toString (specIdx + 3)}";
-    mkSpec = name: extraAttrs: i:
-      {
-        zhuk._spec = name;
-        environment.etc."specialisation".text = i.config.zhuk._spec; # for nh
-        boot.loader.limine.extraConfig = mkDefaultEntry i.config;
-      }
-      // extraAttrs;
-  in {
-    sway.configuration = mkSpec "sway" {imports = [../module/sway.nix];};
-  };
   imports = [
     inputs.disko.nixosModules.default
     inputs.apollo.nixosModules.default
     ./celebrimbor/disko.nix
     ../module/steam.nix
+    ../module/specialisation.nix
   ];
   environment.systemPackages = with pkgs; [efibootmgr ghostty];
   system = {
@@ -86,7 +70,6 @@ in {
       "ahci.mobile_lpm_policy=1" # no power management for SATA: LPM support broken, forcing max_power
     ];
 
-    # kernelPackages = pkgs.linuxKernel.packages.linux_zen;
     kernelPackages = pkgs.linuxPackages_latest;
     initrd = {
       enable = true;
@@ -108,9 +91,6 @@ in {
           networks."10-wan" = {
             matchConfig.Name = "en* eth*"; # or set the exact name, e.g. "enp3s0"
             networkConfig.DHCP = "yes";
-            # optionally:
-            # networkConfig.IPv6AcceptRA = true;
-            # dhcpV4Config.UseDomains = true;
           };
         };
       };
@@ -125,7 +105,7 @@ in {
       dataDir = "${env.HOME}/Sync";
       user = currentSystemUser;
       enable = true;
-      openDefaultPorts = true; # Open ports in the firewall for Syncthing. (NOTE: this will not open syncthing gui port)
+      openDefaultPorts = true;
     };
     navidrome = {
       enable = true;
@@ -138,7 +118,7 @@ in {
       fileSystems = ["/"];
     };
   };
-  programs.zsh.interactiveShellInit = lib.mkBefore ''
+  programs.zsh.interactiveShellInit = ''
     ulimit -n 65535
   '';
   zhuk.git.secrets = false;

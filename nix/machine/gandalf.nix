@@ -9,20 +9,13 @@
 in {
   zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
   environment.systemPackages = with pkgs; [
-    # freenet
-    cachix
-    # cataclysm-dda-git
-    crawl
+    freenet
     zhuk.monero-cli
     zhuk.thorium-browser
     zhuk.tile-thumbnails
-    zhuk.alex313031-codium
     qbittorrent
     prismlauncher
-    libjxl
-    ice-bar # [ERROR] Crashes when using the floating ice bar.
     appcleaner
-    zhuk.syncthing
   ];
   nix.settings = {
     extra-substituters = [
@@ -33,22 +26,14 @@ in {
     ];
   };
   homebrew = {
-    brews = [
-      "virtualenv"
-    ];
-    casks = [
-      # "parsec" # used to be kept for continuous connectivity under a gray ip, but I've gone around it.
-      # "bluestacks" # you served me well....
-    ];
     masApps = {
       # "GarageBand" = 682658836;
       # "Warframe" = 1520001008; # only mobile devices (why???)
       "Pages" = 409201541;
       "Numbers" = 409203825;
       # "DaisyDisk" = 411643860; # using a version from their website as it's more powerful
-      # "Customize Search Engine" = 6445840140; # [TODO]: Return to this maybe
       "Telegram" = 747648890;
-      # "Xcode" = 497799835;
+      # "Xcode" = 497799835; # updates take a while
     };
   };
   networking = {
@@ -71,7 +56,7 @@ in {
   };
   programs.zsh.interactiveShellInit = ''
     ulimit -n 65535
-    alias -- emg='open -a EmacsClient'
+    ${lib.optionalString config.zhuk.emacs.enable "alias -- emg='open -a EmacsClient'"}
     source ${config.sops.secrets.secret-script-1.path}
   '';
   launchd.user.agents.syncthing = {
@@ -123,6 +108,16 @@ in {
       "ssh-keys/misc" = {
         inherit sopsFile;
         path = "${env.HOME}/.ssh/misc.pub";
+        mode = "0400";
+        owner = currentSystemUser;
+      };
+      jjsecrets = {
+        inherit sopsFile;
+        mode = "0400";
+        owner = currentSystemUser;
+      };
+      gitsecrets = {
+        inherit sopsFile;
         mode = "0400";
         owner = currentSystemUser;
       };

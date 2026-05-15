@@ -9,9 +9,6 @@
 in {
   zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
   services.openssh.enable = false;
-  programs.zsh.loginShellInit = lib.mkAfter ''
-    return 0
-  '';
   environment = {
     shellAliases = {
       cnr = "cargo nextest run";
@@ -72,8 +69,16 @@ in {
   sops.secrets = let
     sopsFile = ../../secrets/ws.yaml;
   in {
-    jjsecrets.sopsFile = sopsFile;
-    gitsecrets.sopsFile = sopsFile;
+    jjsecrets = {
+      inherit sopsFile;
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    gitsecrets = {
+      inherit sopsFile;
+      mode = "0400";
+      owner = currentSystemUser;
+    };
     "ssh-keys/work" = {
       inherit sopsFile;
       mode = "0400";

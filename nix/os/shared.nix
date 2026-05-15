@@ -4,7 +4,6 @@
   config,
   currentSystemUser,
   currentSystemName,
-  isWSL,
   isDarwin,
   inputs,
   ...
@@ -20,12 +19,13 @@ in {
       then "darwin"
       else "nixos"
     }.nix
-    ./lix.nix
-    ./options.nix
+    ../module/options.nix
+    ../module/lix.nix
     ../module/zen-browser.nix
+    ../module/zsh.nix
   ];
   nixpkgs.overlays = [
-    (final: _prev: {})
+    (final: _prev: {}) # le exampleaux
   ];
   programs.nix-index.enable = true;
   programs.nix-index-database.comma.enable = true;
@@ -34,24 +34,10 @@ in {
     enable = lib.mkDefault true;
     localMods = {
       enable = false;
-      dir = let
-        bts = pkgs.lib.boolToString;
-      in
-        {
-          "${bts true}" = "${env.HOME}/Library/Application Support/Steam/steamapps/workshop/content/211820";
-          "${bts false}" =
-            {
-              "${bts true}" = "/mnt/c/Program Files (x86)/Steam/steamapps/workshop/content/211820";
-            }."${bts isWSL}";
-        }."${bts isDarwin}";
+      dir = "${env.HOME}/Library/Application Support/Steam/steamapps/workshop/content/211820/";
     };
     bootconfig.settings = {
       assetDirectories = [
-        # Starbound assets
-        # "./xsb-assets/"
-        # "./Resources/xsb-assets/"
-        # "./xSB Client.app/Contents/Resources/xsb-assets/"
-        # Steam-installed Starbound directory on Darwin:
         "${env.HOME}/Library/Application Support/Steam/steamapps/common/Starbound/assets/"
       ];
       storageDirectory = "${env.XDG_DATA_HOME}/xStarbound";
@@ -66,7 +52,7 @@ in {
           warn_timeout = "30s";
         };
         whitelist = {
-          exact = ["${env.HOME}/.envrc"];
+          # exact = ["${env.HOME}/.envrc"]; # don't really use it
         };
       };
     };
@@ -109,51 +95,19 @@ in {
     packages = with pkgs.nerd-fonts;
       [
         fantasque-sans-mono
-        fira-code
-        fira-mono
+        # fira-code
+        # fira-mono
         hack
         im-writing
-        jetbrains-mono
-        liberation
+        # jetbrains-mono
+        # liberation
         meslo-lg
-        monaspace
+        # monaspace
         symbols-only
       ]
       ++ [pkgs.maple-mono.variable];
   };
   networking.hostName = reportSpec currentSystemName;
-
-  programs.zsh = let
-    inherit (lib) getExe getExe';
-    inherit (pkgs) steamcmd coreutils;
-  in {
-    enable = true;
-    enableBashCompletion = true;
-    enableCompletion = true;
-    enableGlobalCompInit = false;
-    promptInit = ''
-      setopt PROMPT_SUBST
-      PROMPT='%B%F{green}%*%f@%F{blue}%U%m%u%f %F{yellow}%~%f %(?.%F{green}>.%F{red}[%?]>)%f%b '
-    '';
-    shellInit =
-      ''''
-      + lib.optionalString isWSL ''
-        getip() { ip r | grep 'link src' | awk '{ print $9 }' }
-      '';
-    interactiveShellInit = ''
-      export DIRCOLORS_EXE="${getExe' coreutils "dircolors"}"
-      export ZSH_DIR="${pkgs.zsh}"
-      export ZIG_SHELL_COMPLETIONS_DIR="${pkgs.zig-shell-completions}"
-      export ZSH_AUTOSUGGESTIONS_DIR="${pkgs.zsh-autosuggestions}"
-      export ZSH_FAST_SYNTAX_HIGHLIGHTING_DIR="${pkgs.zsh-fast-syntax-highlighting}"
-      export ZSH_HISTORY_SUBSTRING_SEARCH_DIR="${pkgs.zsh-history-substring-search}"
-      [[ "$USER" == "${currentSystemUser}" ]] && { source "$NH_FLAKE/configs/zsh/rc.zsh"; source ${pkgs.grc + "/etc/grc.zsh"} }
-      ${lib.optionalString isWSL ''
-        macgame2dir() { ${getExe steamcmd} +force_install_dir "$2" +@sSteamCmdForcePlatformType macos +login mrtoster007 +app_update "$1" +quit }
-        bg2dir() { macgame2dir 1086940 "$1" }
-      ''}
-    '';
-  };
 
   users.users."${currentSystemUser}".shell = pkgs.zsh;
   environment = let
@@ -163,35 +117,41 @@ in {
     systemPackages = with pkgs;
       [
         television
-        nix-tree
-        zoxide
-        config.zhuk.jj.package
+
         zig
         zls
-        gnugrep
-        age
-        alejandra
-        zhuk.bat-wrapped
-        coreutils
-        delta
-        (writeShellScriptBin "devinit" ''nix flake init -t ${env.NH_FLAKE}#$1 && cp ${env.NH_FLAKE}/shells/$1/.envrc{,.local} ./'')
-        eza
-        fd
-        git
-        gnutar
-        jq
-        just
-        nh
-        lpkgs.nil
-        config.zhuk.nvim.package
-        ripgrep
-        rsync
+
         sops
         ssh-to-age
-        zhuk.tmux-wrapped
-        wget
-        grc
+        age
         zhuk.gnupg-wrapped
+        keepassxc
+
+        zhuk.bat-wrapped
+        zoxide
+        coreutils
+        delta
+        ripgrep
+        lstr
+        eza
+        fd
+        jq
+        wget
+        rsync
+        just
+        zhuk.tmux-wrapped
+
+        git
+        config.zhuk.jj.package
+
+        nh
+        lpkgs.nil
+        nix-tree
+
+        config.zhuk.nvim.package
+
+        grc
+        carapace
         # (amneziawg-tools.overrideAttrs (prev: {
         #   postFixup =
         #     prev.postFixup
@@ -199,16 +159,15 @@ in {
         #       sed -i 's/\bwg\b/awg/g;s#/wireguard#/amneziawg#g' $out/bin/.awg-quick-wrapped
         #     '';
         # }))
-        carapace
+
         forgejo-cli
       ]
       ++ shells;
     pathsToLink = ["/share/zsh"];
     shellAliases =
-      rec {
+      {
         l = "${getExe pkgs.eza} --all --oneline --classify=auto --colour=auto --icons=auto --hyperlink";
         ls = "${getExe pkgs.eza} --all --bytes --smart-group --modified --oneline --long --classify=auto --colour=auto --icons=auto --hyperlink";
-        lstr = "${ls} --tree --ignore-glob '.git|.jj|.direnv' --group-directories-first";
         c = "clear";
         cd = "z";
         cp = "cp -irv";
@@ -220,11 +179,9 @@ in {
         tmux = "TERM=xterm-256color tmux";
         sudo = "sudo ";
       }
-      // (
-        if isDarwin
-        then {uv = "diskutil ap unlockVolume";}
-        else {}
-      );
+      // lib.mkIf
+      isDarwin
+      {uv = "diskutil ap unlockVolume";};
     variables = let
       flake-path = builtins.readFile inputs.flake-path.outPath;
       nvimexe = getExe' config.zhuk.nvim.package "nvim";

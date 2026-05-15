@@ -191,7 +191,7 @@ in {
           wrapProgram $out/bin/nvim \
           --add-flags '-u' \
           --add-flags '${../configs/nvim.lua}' \
-          --prefix PATH : ${final.lib.makeBinPath (with final; [git emmylua-ls])}
+          --prefix PATH : ${final.lib.makeBinPath (with final; [fzf alejandra git emmylua-ls])}
         '';
       };
 

@@ -1,10 +1,10 @@
 {
   description = "LMAO TOP TEXT";
   inputs = {
-    # freenet = {
-    #   url = "github:freenet/freenet-core/v0.2.55";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    freenet = {
+      url = "github:freenet/freenet-core/v0.2.55";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     apollo = {
       url = "github:zhuher/le-apollo-flake-fork";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,7 +103,7 @@
       inputs.emacs-overlay.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       inputs.sops-nix.overlays.default
-      # inputs.freenet.overlays.default
+      inputs.freenet.overlays.default
       # inputs.zig-overlay.overlays.default
       (import ./nix/overlays.nix)
     ];
@@ -139,7 +139,7 @@
         specialArgs = {inherit inputs isDarwin;};
         modules =
           [
-            ./nix/configuration/shared.nix
+            ./nix/os/shared.nix
             ./nix/machine/${name}.nix
             ./nix/home/shared.nix
             ./nix/home/${name}.nix

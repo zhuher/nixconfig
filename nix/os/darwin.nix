@@ -8,7 +8,7 @@
 }: let
   env = config.environment.variables;
 in {
-  zhuk.lixVer = "latest";
+  zhuk.lixVer = "latest"; # default "git" version had a test fail
   imports = [
     inputs.sops-nix.darwinModules.sops
     inputs.nix-index-database.darwinModules.nix-index
@@ -136,10 +136,6 @@ in {
         }
     )
   ];
-
-  local.dock = {
-    enable = true;
-  };
 
   homebrew = {
     taps = builtins.attrNames config.nix-homebrew.taps;
@@ -360,6 +356,12 @@ in {
     in {
       # names of scripts that would be run can be found at https://github.com/nix-darwin/nix-darwin/blob/eaff8219d629bb86e71e3274e1b7915014e7fb22/modules/system/activation-scripts.nix#L148-L155
       postActivation.text = let
+        # cd ~/Downloads
+        # curl -O https://cdn.teleport.dev/Teleport%20Connect-16.1.1.dmg
+        # hdiutil attach ~/Downloads/Teleport\ Connect-16.1.1.dmg
+        # installer -pkg /Volumes/Teleport\ Connect-16.1.1/teleport-connect.pkg -target /
+        # hdiutil detach /Volumes/Teleport\ Connect-16.1.1
+        # rm ~/Downloads/Teleport\ Connect-16.1.1.dmg
         link-apps = pkgs.writeText "link-apps" ''
           setopt nullglob
           # /Applications/Nix\ Apps/,
@@ -445,21 +447,11 @@ in {
   };
   sops = {
     defaultSopsFile = ../../secrets/darwin.yaml;
-    defaultSopsFormat = "yaml";
     age.sshKeyPaths = [
       "${env.HOME}/.ssh/age"
-      "${env.HOME}/.ssh/id_ed25519"
       "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
-      jjsecrets = {
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      gitsecrets = {
-        mode = "0400";
-        owner = currentSystemUser;
-      };
       contact-info.mode = "0400";
       access-tokens = {
         mode = "0440";

@@ -25,9 +25,6 @@ in {
   };
   environment = {
     enableAllTerminfo = true;
-    systemPackages = with pkgs; [
-      keepassxc
-    ];
     localBinInPath = true;
     variables = {
       XDG_RUNTIME_DUR = "/var/run/user/${builtins.toString config.users.users.${currentSystemUser}.uid}";
