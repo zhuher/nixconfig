@@ -141,9 +141,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     local keyopts = { buffer = args.buf }
-    if client == nil then
-      return
-    end
+    if client == nil then return end
     if client.capabilities.textDocument then
       if client.capabilities.textDocument.implementation then
         map('n', 'gi', vim.lsp.buf.implementation, 'Jump to implementation', keyopts)
@@ -168,9 +166,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
         map('n', 'gD', vim.lsp.buf.declaration, 'Jump to declaration', keyopts)
       end
       if client.capabilities.textDocument.hover then
-        map('n', 'K', "<cmd>lua vim.lsp.buf.hover({ border = { '╭', '─' ,'╮', '│', '╯', '─', '╰', '│' } })<CR>",
-          'Show symbol info in a floating window',
-          keyopts)
+        if client.name ~= 'rust_analyzer' then
+          map('n', 'K', "<cmd>lua vim.lsp.buf.hover({ border = { '╭', '─' ,'╮', '│', '╯', '─', '╰', '│' } })<CR>",
+            'Show symbol info in a floating window',
+            keyopts)
+        end
       end
       -- map('n', '<leader>a', "<cmd>lua vim.cmd.RustLsp('codeAction')<CR>", "Show code actions", keyopts)
       -- map('n', 'K', "<cmd>lua vim.cmd.RustLsp({'hover', 'actions'})<CR>", "Show hover actions", keyopts)
@@ -187,8 +187,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
         map('n', 'go', vim.lsp.buf.type_definition, 'Jump to type definition', keyopts)
       end
       if client.capabilities.textDocument.codeAction then
-        map('n', '<leader>a', vim.lsp.buf.code_action, 'Show code actions for the symbol under the cursor',
-          keyopts)
+        if client.name ~= 'rust_analyzer' then
+          map('n', '<leader>a', vim.lsp.buf.code_action, 'Show code actions for the symbol under the cursor',
+            keyopts)
+        end
       end
     end
     if client.server_capabilities then
@@ -251,31 +253,32 @@ vim.lsp.config("zls", {
   },
 })
 vim.lsp.enable('zls')
-vim.lsp.config("rust_analyzer", {
-  capabilities = {
-    experimental = { serverStatusNotification = true },
-  },
-  commands = {
-    ExpandMacro =
-        function()
-          vim.lsp.buf_request_all(0,
-            "rust-analyzer/expandMacro",
-            vim.lsp.util.make_position_params(0, "utf-8"),
-            vim.print)
-        end,
-  },
-  cmd = { 'rust-analyzer' },
-  filetypes = { 'rust' },
-  single_file_support = true,
-  settings = {
-    ['rust-analyzer'] = {
-      check = {
-        command = "clippy",
-      },
-    },
-  }
-})
-vim.lsp.enable('rust_analyzer')
+-- vim.lsp.config("rust_analyzer", {
+--   capabilities = {
+--     experimental = { serverStatusNotification = true },
+--   },
+--   commands = {
+--     ExpandMacro =
+--         function()
+--           vim.lsp.buf_request_all(0,
+--             "rust-analyzer/expandMacro", --
+--             vim.lsp.util.make_position_params(0, "utf-8"),
+--             vim.print)
+--         end,
+--   },
+--   cmd = { 'rust-analyzer' },
+--   filetypes = { 'rust' },
+--   single_file_support = true,
+--   settings = {
+--     ['rust-analyzer'] = {
+--       cargo = { features = "all" },
+--       check = {
+--         command = "clippy",
+--       },
+--     },
+--   }
+-- })
+-- vim.lsp.enable('rust_analyzer')
 if g.neovide then
   vo.guifont = "Maple Mono:h14"
   -- Helper function for transparency formatting
@@ -417,8 +420,65 @@ local doWhistles = extraPlugFunc()
 
 local rustaceanvim = {
   'mrcjkb/rustaceanvim',
-  version = '^8', -- Recommended
-  lazy = false,   -- This plugin is already lazy
+  version = '^9',
+  lazy = false,
+  init = function()
+    g.rustaceanvim = {
+      tools = {
+        hover_actions = {
+          replace_builtin_hover = false, -- don't override K globally
+        },
+      },
+      server = {
+        on_attach = function(client, bufnr)
+          local keyopts = { buffer = bufnr, noremap = true, silent = true }
+          vim.keymap.set('n', 'K', function()
+            vim.cmd.RustLsp({ 'hover', 'actions' })
+          end, vim.tbl_extend('force', keyopts, { desc = 'Rust hover actions' }))
+
+          vim.keymap.set('n', '<leader>a', function()
+            vim.cmd.RustLsp('codeAction')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Rust code actions' }))
+
+          vim.keymap.set('n', '<leader>em', function()
+            vim.cmd.RustLsp('expandMacro')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Expand macro' }))
+
+          vim.keymap.set('n', '<leader>rd', function()
+            vim.cmd.RustLsp('renderDiagnostic')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Render diagnostic' }))
+
+          vim.keymap.set('n', '<leader>rr', function()
+            vim.cmd.RustLsp('runnables')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Rust runnables' }))
+
+          vim.keymap.set('n', '<leader>re', function()
+            vim.cmd.RustLsp('explainError')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Explain error' }))
+
+          vim.keymap.set('n', '<leader>rm', function()
+            vim.cmd.RustLsp('rebuildProcMacros')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Rebuild proc macros' }))
+
+          vim.keymap.set('n', '<leader>rp', function()
+            vim.cmd.RustLsp('parentModule')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Go to parent module' }))
+
+          vim.keymap.set('n', '<leader>ro', function()
+            vim.cmd.RustLsp('openDocs')
+          end, vim.tbl_extend('force', keyopts, { desc = 'Open docs.rs' }))
+        end,
+        default_settings = {
+          ['rust-analyzer'] = {
+            cargo = { features = 'all' },
+            check = {
+              command = 'clippy',
+            },
+          },
+        },
+      },
+    }
+  end,
 }
 local vcsigns = {
   'algmyr/vcsigns.nvim',
@@ -1378,7 +1438,7 @@ require("lazy").setup(
     noice,
     -- nvim_ufo,
     precognition,
-    -- rustaceanvim,
+    rustaceanvim,
     treesitter,
     -- vcsigns,
     vim_dim,

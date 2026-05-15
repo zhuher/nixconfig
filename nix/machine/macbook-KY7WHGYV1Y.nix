@@ -9,6 +9,9 @@
 in {
   zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
   services.openssh.enable = false;
+  programs.zsh.loginShellInit = lib.mkAfter ''
+    return 0
+  '';
   environment = {
     shellAliases = {
       cnr = "cargo nextest run";
