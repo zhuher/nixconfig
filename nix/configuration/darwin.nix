@@ -155,6 +155,7 @@ in {
     ];
 
     casks = [
+      "apparency"
       "lulu"
       "moonlight"
       "orion"
@@ -401,7 +402,7 @@ in {
     monitorcontrol
     localsend
     anki-bin
-    apparency # [ERROR]: QuickLook extension does not work when installed via nix.
+    # apparency # [ERROR]: QuickLook extension does not work when installed via nix.
     dockutil
     # moonlight-qt # [ERROR]: Crashes on launch (brew version works fine).
     # raycast # [ERROR] Needs VPN
@@ -420,10 +421,10 @@ in {
       automatic = false;
     };
     settings = {
-      extra-sandbox-paths = [
-        "/usr/bin/strip"
-        "/usr/bin/codesign"
-      ];
+      # extra-sandbox-paths = [
+      #   "/usr/bin/strip"
+      #   "/usr/bin/codesign"
+      # ];
       allowed-impure-host-deps = [
         "/bin/sh"
         "/usr/lib/libSystem.B.dylib"

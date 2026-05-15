@@ -303,6 +303,112 @@ local function checkExts()
   end
   return ok
 end
+---@brief
+---
+--- https://clangd.llvm.org/installation.html
+---
+--- - **NOTE:** Clang >= 11 is recommended! See [#23](https://github.com/neovim/nvim-lspconfig/issues/23).
+--- - If `compile_commands.json` lives in a build directory, you should
+---   symlink it to the root of your source tree.
+---   ```
+---   ln -s /path/to/myproject/build/compile_commands.json /path/to/myproject/
+---   ```
+--- - clangd relies on a [JSON compilation database](https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+---   specified as compile_commands.json, see https://clangd.llvm.org/installation#compile_commandsjson
+
+-- https://clangd.llvm.org/extensions.html#switch-between-sourceheader
+local function switch_source_header(bufnr, client)
+  local method_name = 'textDocument/switchSourceHeader'
+  ---@diagnostic disable-next-line:param-type-mismatch
+  if not client or not client:supports_method(method_name) then
+    return vim.notify(('method %s is not supported by any servers active on the current buffer'):format(method_name))
+  end
+  local params = vim.lsp.util.make_text_document_params(bufnr)
+  ---@diagnostic disable-next-line:param-type-mismatch
+  client:request(method_name, params, function(err, result)
+    if err then
+      error(tostring(err))
+    end
+    if not result then
+      vim.notify('corresponding file cannot be determined')
+      return
+    end
+    vim.cmd.edit(vim.uri_to_fname(result))
+  end, bufnr)
+end
+
+local function symbol_info(bufnr, client)
+  local method_name = 'textDocument/symbolInfo'
+  ---@diagnostic disable-next-line:param-type-mismatch
+  if not client or not client:supports_method(method_name) then
+    return vim.notify('Clangd client not found', vim.log.levels.ERROR)
+  end
+  local win = vim.api.nvim_get_current_win()
+  local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
+  ---@diagnostic disable-next-line:param-type-mismatch
+  client:request(method_name, params, function(err, res)
+    if err or #res == 0 then
+      -- Clangd always returns an error, there is no reason to parse it
+      return
+    end
+    local container = string.format('container: %s', res[1].containerName) ---@type string
+    local name = string.format('name: %s', res[1].name) ---@type string
+    vim.lsp.util.open_floating_preview({ name, container }, '', {
+      height = 2,
+      width = math.max(string.len(name), string.len(container)),
+      focusable = false,
+      focus = false,
+      title = 'Symbol Info',
+    })
+  end, bufnr)
+end
+
+
+vim.lsp.config("clangd",
+  ---@class ClangdInitializeResult: lsp.InitializeResult
+  ---@field offsetEncoding? string
+
+  {
+    cmd = { 'clangd' },
+    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda' },
+    root_markers = {
+      '.clangd',
+      '.clang-tidy',
+      '.clang-format',
+      'compile_commands.json',
+      'compile_flags.txt',
+      'configure.ac', -- AutoTools
+      '.git',
+    },
+    get_language_id = function(_, ftype)
+      local t = { objc = 'objective-c', objcpp = 'objective-cpp', cuda = 'cuda-cpp' }
+      return t[ftype] or ftype
+    end,
+    capabilities = {
+      textDocument = {
+        completion = {
+          editsNearCursor = true,
+        },
+      },
+      offsetEncoding = { 'utf-8', 'utf-16' },
+    },
+    ---@param init_result ClangdInitializeResult
+    on_init = function(client, init_result)
+      if init_result.offsetEncoding then
+        client.offset_encoding = init_result.offsetEncoding
+      end
+    end,
+    on_attach = function(client, bufnr)
+      vim.api.nvim_buf_create_user_command(bufnr, 'LspClangdSwitchSourceHeader', function()
+        switch_source_header(bufnr, client)
+      end, { desc = 'Switch between source/header' })
+
+      vim.api.nvim_buf_create_user_command(bufnr, 'LspClangdShowSymbolInfo', function()
+        symbol_info(bufnr, client)
+      end, { desc = 'Show symbol info' })
+    end,
+  })
+vim.lsp.enable('clangd')
 local hmmm = checkExts()
 local function extraPlugFunc()
   return os.getenv("E") ~= nil
@@ -757,11 +863,11 @@ local television = {
     -- built-in niceties
     local h = require("tv").handlers
     require("tv").setup({
-      layout = "landscape",   -- "landscape" (default) or "portrait"
+      layout = "landscape", -- "landscape" (default) or "portrait"
       -- global window appearance (can be overridden per channel)
       window = {
-        width = 0.8,    -- 80% of editor width
-        height = 0.8,   -- 80% of editor height
+        width = 0.8,  -- 80% of editor width
+        height = 0.8, -- 80% of editor height
         border = "none",
         title = " tv.nvim ",
         title_pos = "center",
@@ -770,15 +876,15 @@ local television = {
       channels = {
         -- `files`: fuzzy find files in your project
         files = {
-          layout = "portrait",               --- override global setting for this channel
-          keybinding = "<leader><leader>",   -- Launch the files channel
+          layout = "portrait",             --- override global setting for this channel
+          keybinding = "<leader><leader>", -- Launch the files channel
           -- what happens when you press a key
           handlers = {
-            ["<CR>"] = h.open_as_files,        -- default: open selected files
-            ["<C-q>"] = h.send_to_quickfix,    -- send to quickfix list
-            ["<C-s>"] = h.open_in_split,       -- open in horizontal split
-            ["<C-v>"] = h.open_in_vsplit,      -- open in vertical split
-            ["<C-y>"] = h.copy_to_clipboard,   -- copy paths to clipboard
+            ["<CR>"] = h.open_as_files,      -- default: open selected files
+            ["<C-q>"] = h.send_to_quickfix,  -- send to quickfix list
+            ["<C-s>"] = h.open_in_split,     -- open in horizontal split
+            ["<C-v>"] = h.open_in_vsplit,    -- open in vertical split
+            ["<C-y>"] = h.copy_to_clipboard, -- copy paths to clipboard
           },
         },
 
@@ -786,11 +892,11 @@ local television = {
         text = {
           keybinding = "<leader>fl",
           handlers = {
-            ["<CR>"] = h.open_at_line,         -- Jump to line:col in file
-            ["<C-q>"] = h.send_to_quickfix,    -- Send matches to quickfix
-            ["<C-s>"] = h.open_in_split,       -- Open in horizontal split
-            ["<C-v>"] = h.open_in_vsplit,      -- Open in vertical split
-            ["<C-y>"] = h.copy_to_clipboard,   -- Copy matches to clipboard
+            ["<CR>"] = h.open_at_line,       -- Jump to line:col in file
+            ["<C-q>"] = h.send_to_quickfix,  -- Send matches to quickfix
+            ["<C-s>"] = h.open_in_split,     -- Open in horizontal split
+            ["<C-v>"] = h.open_in_vsplit,    -- Open in vertical split
+            ["<C-y>"] = h.copy_to_clipboard, -- Copy matches to clipboard
           },
         },
 
@@ -851,8 +957,8 @@ local television = {
         env = {
           keybinding = "<leader>ev",
           handlers = {
-            ["<CR>"] = h.insert_at_cursor,      -- Insert at cursor position
-            ["<C-l>"] = h.insert_on_new_line,   -- Insert on new line
+            ["<CR>"] = h.insert_at_cursor,    -- Insert at cursor position
+            ["<C-l>"] = h.insert_on_new_line, -- Insert on new line
             ["<C-y>"] = h.copy_to_clipboard,
           },
         },
@@ -869,10 +975,10 @@ local television = {
       -- path to the tv binary (default: 'tv')
       tv_binary = "tv",
       global_keybindings = {
-        channels = "<leader>tv",   -- opens the channel selector
+        channels = "<leader>tv", -- opens the channel selector
       },
       quickfix = {
-        auto_open = true,   -- automatically open quickfix window after populating
+        auto_open = true, -- automatically open quickfix window after populating
       },
     })
   end,

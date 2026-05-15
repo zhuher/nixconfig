@@ -112,5 +112,28 @@ $env.config = {
       completer: $external_completer
     }
   }
+  hooks: {
+    command_not_found: {
+      |cmd| (
+        try {
+          let pkgs = (nix-locate --minimal $"bin/($cmd)"
+            | lines
+            | each {
+              |l|
+              if ($l | str ends-with '.out') {
+                $in | parse '{pkg}.out' | $in.pkg.0
+              } else { $in }
+            } | str join "\n")
+          if ($pkgs | is-empty) {
+            return null
+          }
+          return (
+            $"(ansi $env.config.color_config.shape_external)($cmd)(ansi reset) " +
+            $"may be found in the following packages:\n($pkgs)"
+          )
+        }
+      )
+    }
+  }
 }
 source ./deosb.nu

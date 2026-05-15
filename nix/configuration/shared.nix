@@ -27,6 +27,8 @@ in {
   nixpkgs.overlays = [
     (final: _prev: {})
   ];
+  programs.nix-index.enable = true;
+  programs.nix-index-database.comma.enable = true;
 
   programs.xstarbound = {
     enable = lib.mkDefault true;
@@ -166,7 +168,6 @@ in {
         config.zhuk.jj.package
         zig
         zls
-        comma
         gnugrep
         age
         alejandra

@@ -38,6 +38,7 @@ in {
     ];
     casks = [
       # "parsec" # used to be kept for continuous connectivity under a gray ip, but I've gone around it.
+      # "bluestacks" # you served me well....
     ];
     masApps = {
       # "GarageBand" = 682658836;
