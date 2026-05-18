@@ -65,31 +65,35 @@ in {
       options = "--sort dateadded --view grid --display folder";
     }
   ];
-
-  sops.secrets = let
-    sopsFile = ../../secrets/ws.yaml;
-  in {
-    jjsecrets = {
-      inherit sopsFile;
-      mode = "0400";
-      owner = currentSystemUser;
-    };
-    gitsecrets = {
-      inherit sopsFile;
-      mode = "0400";
-      owner = currentSystemUser;
-    };
-    "ssh-keys/work" = {
-      inherit sopsFile;
-      mode = "0400";
-      path = "${env.HOME}/.ssh/work.pub";
-      owner = currentSystemUser;
-    };
-    ssh-hosts = {
-      mode = "0400";
-      path = "${env.HOME}/.ssh/hosts";
-      owner = currentSystemUser;
-      inherit sopsFile;
+  sops = {
+    age.sshKeyPaths = [
+      "/etc/ssh/ssh_host_ed25519_key"
+    ];
+    secrets = let
+      sopsFile = ../../secrets/ws.yaml;
+    in {
+      jjsecrets = {
+        inherit sopsFile;
+        mode = "0400";
+        owner = currentSystemUser;
+      };
+      gitsecrets = {
+        inherit sopsFile;
+        mode = "0400";
+        owner = currentSystemUser;
+      };
+      "ssh-keys/work" = {
+        inherit sopsFile;
+        mode = "0400";
+        path = "${env.HOME}/.ssh/work.pub";
+        owner = currentSystemUser;
+      };
+      ssh-hosts = {
+        mode = "0400";
+        path = "${env.HOME}/.ssh/hosts";
+        owner = currentSystemUser;
+        inherit sopsFile;
+      };
     };
   };
 }

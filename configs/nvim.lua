@@ -79,7 +79,7 @@ local diag_opts = {
   underline = true,
   signs = { text = {} },
   float = {
-    border = "rounded",
+    border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
     format = function(d)
       return ("%s (%s) [%s]"):format(d.message, d.source, d.code or d.user_data.lsp.code)
     end,
@@ -427,6 +427,9 @@ local rustaceanvim = {
       tools = {
         hover_actions = {
           replace_builtin_hover = false, -- don't override K globally
+        },
+        float_win_config = {
+          border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
         },
       },
       server = {

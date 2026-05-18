@@ -125,7 +125,6 @@ in {
         ssh-to-age
         age
         zhuk.gnupg-wrapped
-        keepassxc
 
         zhuk.bat-wrapped
         zoxide

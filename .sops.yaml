@@ -3,12 +3,9 @@ keys:
   - &zhuher age1e8qmakcms693egjptg3dz57ttrl9pnpuhyympm8mqhrjwazxyy2q9n3ga0
   # nix-shell -p ssh-to-age --run 'ssh-keyscan -t ed25519 localhost | ssh-to-age'
   - &gandalf age1erm4dclf6x0kj58vc5mgtycdqd7xqv32clk6j2har20q97zzk9as57ple8
-  - &workbook age17vpmm4l0ktf8868vzjs8pwckav02arrw4j6ld8rl2nt69aqtta4s3rq9lg
+  - &workbook age1ek2r6a9q96mp4wj9u7mml3y650wxpqr3qfef45g3sdx2fxjqkpnscpaf6g
+
 creation_rules:
-- path_regex: secrets/.*
-  key_groups:
-  - age:
-    - *zhuher
 - path_regex: darwin.yaml
   key_groups:
   - age:
