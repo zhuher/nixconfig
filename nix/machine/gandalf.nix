@@ -126,6 +126,11 @@ in {
         mode = "0400";
         owner = currentSystemUser;
       };
+      gitcreator = {
+        inherit sopsFile;
+        mode = "0400";
+        owner = currentSystemUser;
+      };
     };
   };
   local.dock.entries = [

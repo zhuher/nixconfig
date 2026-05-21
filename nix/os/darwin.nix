@@ -448,7 +448,7 @@ in {
   sops = {
     defaultSopsFile = ../../secrets/darwin.yaml;
     age.sshKeyPaths = [
-      # "${env.HOME}/.ssh/age"
+      "/etc/ssh/ssh_host_ed25519_key"
     ];
     secrets = {
       contact-info.mode = "0400";

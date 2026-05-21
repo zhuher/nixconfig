@@ -66,9 +66,6 @@ in {
     }
   ];
   sops = {
-    age.sshKeyPaths = [
-      "/etc/ssh/ssh_host_ed25519_key"
-    ];
     secrets = let
       sopsFile = ../../secrets/ws.yaml;
     in {
