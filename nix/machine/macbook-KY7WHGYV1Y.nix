@@ -7,7 +7,6 @@
 }: let
   env = config.environment.variables;
 in {
-  zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
   services.openssh.enable = false;
   environment = {
     shellAliases = {
@@ -19,17 +18,17 @@ in {
       SCCACHE_CACHE_SIZE = "100G";
     };
     systemPackages = with pkgs; [
-      (writeZig zig "hello-zig" ''
-        const std = @import("std");
-        pub fn main() void {
-          std.debug.print("hello from a nix package!", .{});
-        }
-      '' "-O ReleaseSafe")
+      nodejs-slim_25
+      (writeZigScript zig "hello-zig" ''
+        _ = init;
+        std.debug.print("hello from a nix package!", .{});
+      '' "-OReleaseSmall")
       sccache
     ];
   };
   homebrew = {
-    casks = ["dbeaver-community"];
+    casks = ["dbeaver-community" "google-chrome"];
+    masApps = {"Windows App" = 1295203466;};
   };
   programs.xstarbound.enable = false;
   security.pki = {
@@ -65,32 +64,10 @@ in {
       options = "--sort dateadded --view grid --display folder";
     }
   ];
-  sops = {
-    secrets = let
-      sopsFile = ../../secrets/ws.yaml;
-    in {
-      jjsecrets = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      gitsecrets = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      "ssh-keys/work" = {
-        inherit sopsFile;
-        mode = "0400";
-        path = "${env.HOME}/.ssh/work.pub";
-        owner = currentSystemUser;
-      };
-      ssh-hosts = {
-        mode = "0400";
-        path = "${env.HOME}/.ssh/hosts";
-        owner = currentSystemUser;
-        inherit sopsFile;
-      };
-    };
+  sops.defaultSopsFile = ../../secrets/ws.yaml;
+  sops.secrets."ssh-keys/work" = {
+    mode = "0400";
+    path = "${env.HOME}/.ssh/work.pub";
+    owner = currentSystemUser;
   };
 }

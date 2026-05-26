@@ -7,19 +7,18 @@ keys:
   - &celebrimbor age18lftr8lwdq308d7uw6vhvlpl2y5wkaqcj5tupknck3rgrkwz3uwqlpu9zh
 
 creation_rules:
-- path_regex: darwin.yaml
+- path_regex: secrets/gandalf.yaml
   key_groups:
   - age:
     - *zhuher
     - *gandalf
-    - *workbook
-- path_regex: gandalf.yaml
-  key_groups:
-  - age:
-    - *zhuher
-    - *gandalf
-- path_regex: ws.yaml
+- path_regex: secrets/ws.yaml
   key_groups:
   - age:
     - *zhuher
     - *workbook
+- path_regex: secrets/cbbor.yaml
+  key_groups:
+  - age:
+    - *zhuher
+    - *celebrimbor

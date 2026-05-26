@@ -57,5 +57,19 @@ in {
         default = false;
       };
     };
+    wine = {
+      wayland = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Use Wine Wow64 Wayland build instead of staging";
+      };
+      package = mkOption {
+        type = types.package;
+        default =
+          if cfg.wine.wayland
+          then pkgs.wineWow64Packages.waylandFull
+          else pkgs.wine64Packages.stagingFull;
+      };
+    };
   };
 }

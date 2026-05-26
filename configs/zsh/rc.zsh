@@ -68,12 +68,6 @@ bytes-me-to-uuid() {
 uuid-to-bytes-me() {
   printf "$@" | sed 's/-//g;s/../& /g' | awk '{ print toupper($4" "$3" "$2" "$1" "$6" "$5" "$8" "$7" "$9" "$10" "$11" "$12" "$13" "$14" "$15" "$16) }'
 }
-win2lin() {
-  ssh WINDOWSL 'bcdedit /set {fwbootmgr} bootsequence {fbdc8c86-3b1e-11f1-b08e-806e6f6e6963}; shutdown /r /t 0'
-}
-lin2win() {
-  ssh CELEBRIMBORL -t 'sudo efibootmgr -n 0000; sudo reboot now'
-}
 # sudo NIX_CONFIG="extra-experimental-features = nix-command flakes" nix run github:nix-community/disko -- --mode mount nixconfig/nix/machine/celebrimbor/disko.nix
 # NIX_CONFIG="extra-experimental-features = nix-command flakes" nix run develop nixconfig/shells/.nix
 # NIX_CONFIG="extra-experimental-features = nix-command flakes" nix shell nixpkgs#chntpw nixpkgs#hivex nixpkgs#delta nixpkgs#ripgrep nixpkgs#fd nixpkgs#bat

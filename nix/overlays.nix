@@ -1,4 +1,4 @@
-final: _prev: let
+final: prev: let
   fcp = final.lpkgs.callPackage; # [FIXME] have not found a way to override callPackage without encountering infinite recursion
 in {
   # zig = final.zigpkgs."0_16_0";
@@ -16,8 +16,13 @@ in {
       final.zhuk.notify "Populating ${dst}" ''${mkdir} -pv "$(${dirname} -- "${dst}")" && ${ln} -fsv "${src}" "${dst}"'')
     fileList);
 
-  writeZig = zig: name: text: args: let
-    src = final.writeText "${name}.zig" text;
+  writeZigScript = zig: name: text: args: let
+    src = final.writeText "${name}.zig" ''
+      const std = @import("std");
+      pub fn main(init: std.process.Init) !void {
+        ${text}
+      }
+    '';
   in
     final.runCommand name {
       nativeBuildInputs = [zig];
@@ -26,6 +31,24 @@ in {
       zig build-exe ${src} --global-cache-dir "$TMPDIR" --cache-dir "$TMPDIR" --name ${name} ${args}
       mv ${name} $out/bin/${name}
     '';
+
+  tofi = with prev;
+    symlinkJoin {
+      name = "tofi";
+      paths = [tofi];
+      nativeBuildInputs = [makeBinaryWrapper];
+      postBuild = ''
+        wrapProgram $out/bin/tofi \
+        --add-flags '--config' \
+        --add-flags \
+        ${../configs/tofi}
+        wrapProgram $out/bin/tofi-drun \
+        --add-flags '--config' \
+        --add-flags \
+        ${../configs/tofi}
+      '';
+    };
+
   zhuk = {
     # Simple notification function for shell scripts
     notify = msg: body: ''

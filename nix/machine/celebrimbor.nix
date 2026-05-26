@@ -14,11 +14,15 @@ in {
     ./celebrimbor/disko.nix
     ../module/steam.nix
     ../module/specialisation.nix
+    ../module/minecraft.nix
   ];
+  sops.defaultSopsFile = ../../secrets/cbbor.yaml;
   environment.systemPackages = with pkgs; [
     efibootmgr
     ghostty
-    prismlauncher
+    keepassxc
+    qbittorrent
+    config.zhuk.wine.package
   ];
   system = {
     stateVersion = "26.05";
@@ -122,9 +126,17 @@ in {
       fileSystems = ["/"];
     };
   };
-  programs.zsh.interactiveShellInit = ''
-    ulimit -n 65535
-  '';
+  services.mullvad-vpn = {
+    enable = true;
+    package = pkgs.mullvad-vpn;
+  };
+
   zhuk.git.secrets = false;
   zhuk.jj.secrets = false;
+  networking.nameservers = [
+    "9.9.9.11"
+    "149.112.112.11"
+    "2620:fe::11"
+    "2620:fe::fe:11"
+  ];
 }

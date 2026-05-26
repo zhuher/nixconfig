@@ -7,9 +7,8 @@
 }: {
   programs.zsh = let
     inherit (lib) getExe getExe';
-    inherit (pkgs) steamcmd coreutils;
   in {
-    loginShellInit = lib.mkOrder 69420 /*goes after everything nix*/ ''
+    loginShellInit = lib.mkOrder 69420 ''
       return 0
     '';
     enable = true;
@@ -26,6 +25,7 @@
         getip() { ip r | rg 'link src' | awk '{ print $9 }' }
       '';
     interactiveShellInit = with pkgs; ''
+      ulimit -n 65535
       export DIRCOLORS_EXE="${getExe' coreutils "dircolors"}"
       export ZSH_DIR="${zsh}"
       export ZIG_SHELL_COMPLETIONS_DIR="${zig-shell-completions}"

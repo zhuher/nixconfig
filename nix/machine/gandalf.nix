@@ -7,7 +7,7 @@
 }: let
   env = config.environment.variables;
 in {
-  zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped true config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
+  sops.defaultSopsFile = ../../secrets/gandalf.yaml;
   environment.systemPackages = with pkgs; [
     freenet
     zhuk.monero-cli
@@ -26,14 +26,14 @@ in {
     ];
   };
   homebrew = {
+    casks = [
+      # gandalf-specific casks (common ones in os/darwin.nix)
+      "ayugram"
+    ];
     masApps = {
-      # "GarageBand" = 682658836;
-      # "Warframe" = 1520001008; # only mobile devices (why???)
+      # gandalf-specific apps (common ones in os/darwin.nix)
       "Pages" = 409201541;
       "Numbers" = 409203825;
-      # "DaisyDisk" = 411643860; # using a version from their website as it's more powerful
-      "Telegram" = 747648890;
-      # "Xcode" = 497799835; # updates take a while
     };
   };
   networking = {
@@ -55,7 +55,6 @@ in {
     ];
   };
   programs.zsh.interactiveShellInit = ''
-    ulimit -n 65535
     ${lib.optionalString config.zhuk.emacs.enable "alias -- emg='open -a EmacsClient'"}
     source ${config.sops.secrets.secret-script-1.path}
   '';
@@ -77,66 +76,40 @@ in {
       StandardErrorPath = "${env.HOME}/Library/Logs/Syncthing-Errors.log";
     };
   };
-  sops = let
-    sopsFile = ../../secrets/gandalf.yaml;
-  in {
-    secrets = {
-      ssh-hosts = {
-        inherit sopsFile;
-        mode = "0400";
-        path = "${env.HOME}/.ssh/hosts";
-        owner = currentSystemUser;
-      };
-      copilot-hosts = {
-        path = "/Users/zhuher/.config/github-copilot/hosts.json";
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      "ssh-keys/gh" = {
-        inherit sopsFile;
-        path = "${env.HOME}/.ssh/gh.pub";
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      "ssh-keys/pers" = {
-        inherit sopsFile;
-        path = "${env.HOME}/.ssh/pers.pub";
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      "ssh-keys/misc" = {
-        inherit sopsFile;
-        path = "${env.HOME}/.ssh/misc.pub";
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      jjsecrets = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      gitsecrets = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      secret-script-1 = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
-      gitcreator = {
-        inherit sopsFile;
-        mode = "0400";
-        owner = currentSystemUser;
-      };
+  sops.secrets = {
+    copilot-hosts = {
+      path = "/Users/zhuher/.config/github-copilot/hosts.json";
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    "ssh-keys/gh" = {
+      path = "${env.HOME}/.ssh/gh.pub";
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    "ssh-keys/pers" = {
+      path = "${env.HOME}/.ssh/pers.pub";
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    "ssh-keys/misc" = {
+      path = "${env.HOME}/.ssh/misc.pub";
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    secret-script-1 = {
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    gitcreator = {
+      mode = "0400";
+      owner = currentSystemUser;
     };
   };
   local.dock.entries = [
     {path = "/Applications/Safari.app";}
     {path = "/Applications/Moonlight.app";}
-    {path = "/Applications/Telegram.app";}
+    {path = "/Applications/AyuGram.app";}
     {path = "/Applications/Nix Apps/Ghostty.app";}
     {path = "/Applications/Mail.app";}
     {

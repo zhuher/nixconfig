@@ -12,13 +12,13 @@
   shells = with pkgs; [nushell zsh fish];
   specMsg = "Evaluating specialisation: ${config.zhuk._spec}";
   reportSpec = builtins.trace specMsg;
+  platformModule =
+    if isDarwin
+    then ./darwin.nix
+    else ./nixos.nix;
 in {
   imports = [
-    ./${
-      if isDarwin
-      then "darwin"
-      else "nixos"
-    }.nix
+    platformModule
     ../module/options.nix
     ../module/lix.nix
     ../module/zen-browser.nix
@@ -200,4 +200,24 @@ in {
       ZDOTDIR = "${XDG_CONFIG_HOME}/zsh";
     };
   };
+
+  # Common secrets for all machines - sopsFile can be overridden per-machine
+  sops.secrets = {
+    jjsecrets = {
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    gitsecrets = {
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    ssh-hosts = {
+      mode = "0400";
+      path = "${config.users.users."${currentSystemUser}".home}/.ssh/hosts";
+      owner = currentSystemUser;
+    };
+  };
+
+  # Default jj package with secrets - machines can override
+  zhuk.jj.package = pkgs.zhuk.mkJujutsu-wrapped config.zhuk.jj.secrets config.sops.secrets.jjsecrets.path config.zhuk.nvim.package;
 }

@@ -11,6 +11,8 @@ alias ezad = ^eza --all --bytes --smart-group --modified --oneline --long --clas
 alias ez = ^eza --all --oneline --classify=auto --colour=auto --icons=auto --hyperlink
 alias jjl = jj log --limit=10 --no-pager
 alias jjgf = jj git fetch --all-remotes
+# alias canihazip = dig +short myip.opendns.com @resolver1.opendns.com
+# alias canihazipv4 = dig +short myip.opendns.com @resolver1.opendns.com -4
 module "awg-quick extern" {
   def complete_tunnel [] {
     nls /var/run/amneziawg/*.name
@@ -83,6 +85,7 @@ let external_completer = {|spans: list<string>|
         launchctl
         | sops
         | jj
+        | rsync
         => $fish_completer
         _ => $carapace_completer
     } | do $in $spans
@@ -136,4 +139,20 @@ $env.config = {
     }
   }
 }
+$env.PATH = prepath $"($env.HOME)/.npm/bin"
+
+def win2lin [
+  mode: string = ""
+] {
+  let router = if $mode == "l" { "ROUTERL" } else { "ROUTER" }
+  ssh -J $router WINDOWSL 'bcdedit /set {fwbootmgr} bootsequence {fbdc8c86-3b1e-11f1-b08e-806e6f6e6963}; shutdown /r /t 0'
+}
+
+def lin2win [
+  mode: string = ""
+] {
+  let router = if $mode == "l" { "ROUTERL" } else { "ROUTER" }
+  ssh -J $router CELEBRIMBORL -t 'sudo efibootmgr -n 0000; sudo reboot now'
+}
+
 source ./deosb.nu

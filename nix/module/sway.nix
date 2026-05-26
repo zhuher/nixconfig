@@ -31,6 +31,7 @@
         # capture = "kms"; # [Error]: Unknown Monitor connector type [HEADLESS]: Please report this to the GitHub issue tracker (stinker!!!)
         capture = "wlr";
         audio_sink = "sink-sunshine-surround71";
+        fec_percentage = 20;
       };
       applications = {
         env = {
@@ -93,6 +94,13 @@
     ];
   };
 
+  system.activationScripts = {
+    "refresh-tofi-cache" = {
+      text = ''
+        rm ${config.environment.variables.XDG_CACHE_HOME}/tofi-drun || true
+      '';
+    };
+  };
   systemd.user.services.apollo = {
     bindsTo = ["sway.service"];
     partOf = ["sway.service"];
