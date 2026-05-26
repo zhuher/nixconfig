@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  ...
 }: {
   specialisation = let
     specList = builtins.attrNames config.specialisation;

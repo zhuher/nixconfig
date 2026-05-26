@@ -5,21 +5,9 @@
   lib,
   ...
 }: {
-  programs.zsh.loginShellInit = let
-    inherit (pkgs) sway coreutils;
-    inherit (lib) getExe getExe';
-  in
-    lib.mkBefore ''
-      if [[ "$(${getExe' coreutils "tty"})" == "/dev/tty1" && "$USER" == "${currentSystemUser}" ]]; then
-        sleep 5
-        ${getExe sway} --unsupported-gpu > sway.log 2> sway.err.log
-      fi
-    '';
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = [pkgs.xdg-desktop-portal-wlr];
-  };
+  imports = [
+    ./sound.nix
+  ];
   security.pam.loginLimits = [
     {
       domain = "@users";
@@ -29,15 +17,6 @@
     }
   ];
   services = {
-    getty = {
-      autologinOnce = true;
-      autologinUser = currentSystemUser;
-    };
-    pipewire = {
-      enable = true;
-      alsa.enable = true;
-      pulse.enable = true;
-    };
     apollo = {
       enable = true;
       package =
@@ -46,15 +25,17 @@
         else pkgs.apollo;
       openFirewall = true;
       capSysAdmin = true;
-      autoStart = true;
+      autoStart = false;
       settings = {
         min_log_level = 2;
         # capture = "kms"; # [Error]: Unknown Monitor connector type [HEADLESS]: Please report this to the GitHub issue tracker (stinker!!!)
         capture = "wlr";
+        audio_sink = "sink-sunshine-surround71";
       };
       applications = {
         env = {
           PATH = "${lib.makeBinPath (with pkgs; [sway bash])}";
+          # PULSE_SINK = "Sunshine-only";
         };
         apps = [
           {
@@ -111,13 +92,40 @@
       ironbar
     ];
   };
+
+  systemd.user.services.apollo = {
+    bindsTo = ["sway.service"];
+    partOf = ["sway.service"];
+  };
+  systemd.user.services.sway = {
+    description = "Primary Sway Session";
+    wantedBy = ["default.target"];
+    environment = {
+      "NONU" = "1";
+      "LIBSEAT_BACKEND" = "seatd";
+      "XDG_SESSION_TYPE" = "wayland";
+    };
+    serviceConfig = {
+      Type = "simple";
+      ExecStartPre = "${lib.getExe' pkgs.coreutils "timeout"} 10 ${lib.getExe pkgs.bash} -c 'until [ -e /dev/dri/renderD128 ]; do sleep 0.1; done'";
+      ExecStart = "${lib.getExe pkgs.zsh} -ilc 'unset NONU; exec ${lib.getExe config.programs.sway.package} --unsupported-gpu'";
+      ExecStopPost = "${lib.getExe' pkgs.systemd "systemctl"} --user unset-environment WAYLAND_DISPLAY DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP";
+      Restart = "on-failure";
+      RestartSec = 5;
+      StandardOutput = "file:%h/sway.log";
+      StandardError = "file:%h/sway.err.log";
+    };
+  };
   hardware = {
     uinput.enable = true;
   };
-  users.users.${currentSystemUser}.extraGroups = [
-    "uinput"
-    "input"
-    "video"
-    "sway"
-  ];
+  users.users.${currentSystemUser} = {
+    linger = true;
+    extraGroups = [
+      "uinput"
+      "input"
+      "video"
+      "sway"
+    ];
+  };
 }

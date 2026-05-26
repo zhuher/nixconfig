@@ -4,6 +4,7 @@ keys:
   # nix-shell -p ssh-to-age --run 'ssh-keyscan -t ed25519 localhost | ssh-to-age'
   - &gandalf age1erm4dclf6x0kj58vc5mgtycdqd7xqv32clk6j2har20q97zzk9as57ple8
   - &workbook age1ek2r6a9q96mp4wj9u7mml3y650wxpqr3qfef45g3sdx2fxjqkpnscpaf6g
+  - &celebrimbor age18lftr8lwdq308d7uw6vhvlpl2y5wkaqcj5tupknck3rgrkwz3uwqlpu9zh
 
 creation_rules:
 - path_regex: darwin.yaml

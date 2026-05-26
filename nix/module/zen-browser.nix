@@ -69,6 +69,8 @@
             };
           in {
             "browser.translations.automaticallyPopup" = lock false;
+            "browser.search.region" = lock "CH";
+            # "doh-rollout.home-region" = lock "CH";
             # "browser.startup.homepage" = lock "https://news.ycombinator.com";
             # "toolkit.legacyUserProfileCustomizations.stylesheets" = lock true;
             # "browser.warnOnQuitShortcut" = lock false;

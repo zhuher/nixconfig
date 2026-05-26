@@ -28,7 +28,10 @@
                 type = "filesystem";
                 format = "ntfs";
                 mountpoint = "/windows";
-                mountOptions = ["ro" "nofail"]; # Read-only for safety
+                mountOptions = [
+                  # "ro" # Read-only for le safety
+                  "nofail"
+                ]; 
               };
             };
 
@@ -100,5 +103,4 @@
       };
     };
   };
-  fileSystems."/".neededForBoot = true;
 }

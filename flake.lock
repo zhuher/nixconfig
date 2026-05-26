@@ -155,16 +155,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1778256355,
-        "narHash": "sha256-5nM1YODN+zOcIooOo+vdciQAONeCtp/flNZPOPadA+Y=",
+        "lastModified": 1779384727,
+        "narHash": "sha256-MynoSFbThLLYfZfDGG9HmdsGMpxisTbvAtiZtx8jvmo=",
         "owner": "freenet",
         "repo": "freenet-core",
-        "rev": "816f4adca31d21013d9ad226b97081d81940e9c0",
+        "rev": "cc209be8d0692c8721421a2f57fd9ff4ab473664",
         "type": "github"
       },
       "original": {
         "owner": "freenet",
-        "ref": "v0.2.55",
+        "ref": "v0.2.61",
         "repo": "freenet-core",
         "type": "github"
       }

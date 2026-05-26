@@ -15,7 +15,11 @@ in {
     ../module/steam.nix
     ../module/specialisation.nix
   ];
-  environment.systemPackages = with pkgs; [efibootmgr ghostty];
+  environment.systemPackages = with pkgs; [
+    efibootmgr
+    ghostty
+    prismlauncher
+  ];
   system = {
     stateVersion = "26.05";
   };
@@ -41,7 +45,7 @@ in {
         maxGenerations = 10;
         enableEditor = false;
         extraConfig = ''
-          timeout: 0
+          timeout: 5
         '';
         extraEntries = ''
           /Windows

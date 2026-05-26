@@ -1,4 +1,5 @@
-exec dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+# Sync critical paths and Wayland variables to systemd and D-Bus, then start Apollo
+exec "systemctl --user import-environment PATH XDG_DATA_DIRS XDG_SESSION_TYPE XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY SWAYSOCK && dbus-update-activation-environment --systemd PATH XDG_DATA_DIRS XDG_SESSION_TYPE XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY SWAYSOCK && systemctl --user start apollo.service"
 # Default config for sway
 #
 # Copy this to ~/.config/sway/config and edit it to your liking.
@@ -23,7 +24,9 @@ set $menu tofi-drun | xargs swaymsg exec --
 # bindsym $mod+Shift+d exec $drun
 
 ### Output configuration
-#
+# Performance tuning
+output * allow_tearing yes
+output * max_render_time off
 # Default wallpaper (more resolutions are available in /run/current-system/sw/share/backgrounds/sway/)
 output * bg /run/current-system/sw/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 # configure your real monitor

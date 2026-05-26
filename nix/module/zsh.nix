@@ -32,7 +32,7 @@
       export ZSH_AUTOSUGGESTIONS_DIR="${zsh-autosuggestions}"
       export ZSH_FAST_SYNTAX_HIGHLIGHTING_DIR="${zsh-fast-syntax-highlighting}"
       export ZSH_HISTORY_SUBSTRING_SEARCH_DIR="${zsh-history-substring-search}"
-      [[ "$USER" == "${currentSystemUser}" ]] && { source "$NH_FLAKE/configs/zsh/rc.zsh"; source ${grc + "/etcaboa/grc.zsh"} }
+      [[ "$USER" == "${currentSystemUser}" ]] && { source "$NH_FLAKE/configs/zsh/rc.zsh"; source ${grc}/etc/grc.zsh }
       ${lib.optionalString isWSL ''
         macgame2dir() { ${getExe steamcmd} +force_install_dir "$2" +@sSteamCmdForcePlatformType macos +login mrtoster007 +app_update "$1" +quit }
         bg2dir() { macgame2dir 1086940 "$1" }

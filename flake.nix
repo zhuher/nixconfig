@@ -2,7 +2,7 @@
   description = "LMAO TOP TEXT";
   inputs = {
     freenet = {
-      url = "github:freenet/freenet-core/v0.2.55";
+      url = "github:freenet/freenet-core/v0.2.61";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     apollo = {

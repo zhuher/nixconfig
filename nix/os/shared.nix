@@ -120,6 +120,7 @@ in {
 
         zig
         zls
+        zig-zlint
 
         sops
         ssh-to-age
