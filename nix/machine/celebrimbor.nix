@@ -15,6 +15,7 @@ in {
     ../module/steam.nix
     ../module/specialisation.nix
     ../module/minecraft.nix
+    ../module/navidrome.nix
   ];
   sops.defaultSopsFile = ../../secrets/cbbor.yaml;
   environment.systemPackages = with pkgs; [
@@ -22,7 +23,6 @@ in {
     ghostty
     keepassxc
     qbittorrent
-    config.zhuk.wine.package
   ];
   system = {
     stateVersion = "26.05";
@@ -115,10 +115,6 @@ in {
       enable = true;
       openDefaultPorts = true;
     };
-    navidrome = {
-      enable = true;
-      settings.MusicFolder = "${env.HOME}/Music";
-    };
     fstrim.enable = true;
     btrfs.autoScrub = {
       enable = true;
@@ -139,4 +135,21 @@ in {
     "2620:fe::11"
     "2620:fe::fe:11"
   ];
+
+  sops.secrets = {
+    "sunshine-cakey" = {
+      sopsFile = ../../secrets/cbbor/sunchine.cakey.pem;
+      key = "data";
+      path = "${env.HOME}/.config/sunshine/credentials/cakey.pem";
+      mode = "0400";
+      owner = currentSystemUser;
+    };
+    "sunshine-cacert" = {
+      sopsFile = ../../secrets/cbbor/sunchine.cacert.pem;
+      key = "data";
+      path = "${env.HOME}/.config/sunshine/credentials/cacert.pem";
+      mode = "0444";
+      owner = currentSystemUser;
+    };
+  };
 }

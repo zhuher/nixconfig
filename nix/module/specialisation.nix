@@ -20,7 +20,6 @@
   in {
     sway.configuration = mkSpec "sway" {
       imports = [./sway.nix];
-      zhuk.wine.wayland = true;
     };
   };
 }

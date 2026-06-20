@@ -68,7 +68,7 @@ in {
         default =
           if cfg.wine.wayland
           then pkgs.wineWow64Packages.waylandFull
-          else pkgs.wine64Packages.stagingFull;
+          else pkgs.wineWow64Packages.stagingFull;
       };
     };
   };

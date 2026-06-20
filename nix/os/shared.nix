@@ -152,6 +152,8 @@ in {
 
         grc
         carapace
+
+        localsend
         # (amneziawg-tools.overrideAttrs (prev: {
         #   postFixup =
         #     prev.postFixup

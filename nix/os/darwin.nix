@@ -14,6 +14,7 @@ in {
     inputs.nix-index-database.darwinModules.nix-index
     inputs.nix-homebrew.darwinModules.nix-homebrew
     inputs.hjem.darwinModules.hjem
+    ../module/dock.nix
     # inputs.nvf.darwinModules.nvf
     # ../module/nvim.nix
     {
@@ -30,111 +31,6 @@ in {
         autoMigrate = true;
       };
     }
-    (
-      {
-        config,
-        pkgs,
-        lib,
-        ...
-      }:
-      # Original source: https://gist.github.com/antifuchs/10138c4d838a63c0a05e725ccd7bccdd
-        with lib; let
-          cfg = config.local.dock;
-          inherit (pkgs) stdenv;
-          zsh = getExe pkgs.zsh;
-          dockutil = getExe pkgs.dockutil;
-        in {
-          options = {
-            local.dock.enable = mkOption {
-              description = "Enable dock";
-              default = stdenv.isDarwin;
-              example = false;
-            };
-            local.dock.entries = mkOption {
-              description = "Entries on the Dock";
-              type = with types;
-                listOf (submodule {
-                  options = {
-                    path = mkOption {type = str;};
-                    section = mkOption {
-                      type = str;
-                      default = "apps";
-                    };
-                    options = mkOption {
-                      type = str;
-                      default = "";
-                    };
-                  };
-                });
-              readOnly = true;
-            };
-            local.dock.username = mkOption {
-              description = "Username to apply the dock settings to";
-              default = config.system.primaryUser;
-              type = types.str;
-            };
-          };
-          config = mkIf cfg.enable (
-            let
-              normalize = path:
-                if hasSuffix ".app" path
-                then path + "/"
-                else path;
-              entryURI = path:
-                "file://"
-                + (
-                  builtins.replaceStrings
-                  [
-                    " "
-                    "!"
-                    "\""
-                    "#"
-                    "$"
-                    "%"
-                    "&"
-                    "'"
-                    "("
-                    ")"
-                  ]
-                  [
-                    "%20"
-                    "%21"
-                    "%22"
-                    "%23"
-                    "%24"
-                    "%25"
-                    "%26"
-                    "%27"
-                    "%28"
-                    "%29"
-                  ]
-                  (normalize path)
-                );
-              wantURIs = concatMapStrings (entry: "${entryURI entry.path}\n") cfg.entries;
-              createEntries =
-                concatMapStrings (
-                  entry: "${dockutil} --no-restart --add '${entry.path}' --section ${entry.section} ${entry.options}\n"
-                )
-                cfg.entries;
-              subody = pkgs.writeText "dock.zsh" ''
-                haveURIs="$(${dockutil} --list | ${getExe' pkgs.coreutils "cut"} -f2)"
-                if ! diff -wu <(echo -n "$haveURIs") <(echo -n '${wantURIs}') >&2 ; then
-                  echo >&2 -e "\033[33mResetting Dock.\033[0m"
-                  ${dockutil} --no-restart --remove all
-                  ${createEntries}
-                  killall Dock
-                fi
-                echo >&2 -e "\033[32mDock setup complete.\033[0m"
-              '';
-            in {
-              system.activationScripts.postActivation.text = ''
-                echo >&2 -e "\033[34mSetting up the Dock for ${cfg.username}...\033[0m"
-                su ${cfg.username} -c '${zsh} ${subody}'
-              '';
-            }
-          );
-        }
-    )
   ];
 
   homebrew = {
@@ -142,8 +38,10 @@ in {
     enable = true;
     onActivation = {
       cleanup = "zap";
-      autoUpdate = true;
-      upgrade = true;
+      # Disabled: slow, unpredictable builds with network dependency
+      # Run manually: brew update && brew upgrade
+      autoUpdate = false;
+      upgrade = false;
     };
 
     brews = [
@@ -315,7 +213,7 @@ in {
       hitoolbox.AppleFnUsageType = "Do Nothing"; # “Change Input Source”, “Show Emoji & Symbols”, “Start Dictation”
       loginwindow = {
         DisableConsoleAccess = true;
-        GuestEnabled = true;
+        GuestEnabled = false;
         SHOWFULLNAME = true;
       };
       menuExtraClock = {
@@ -402,7 +300,6 @@ in {
     ghostty-bin
     iina
     monitorcontrol
-    localsend
     anki-bin
     # apparency # [ERROR]: QuickLook extension does not work when installed via nix.
     dockutil
@@ -427,14 +324,14 @@ in {
       #   "/usr/bin/strip"
       #   "/usr/bin/codesign"
       # ];
-      allowed-impure-host-deps = [
-        "/bin/sh"
-        "/usr/lib/libSystem.B.dylib"
-        "/usr/lib/system/libunc.dylib"
-        "/dev/zero"
-        "/dev/random"
-        "/dev/urandom"
-      ];
+      # allowed-impure-host-deps = [
+      #   "/bin/sh"
+      #   "/usr/lib/libSystem.B.dylib"
+      #   "/usr/lib/system/libunc.dylib"
+      #   "/dev/zero"
+      #   "/dev/random"
+      #   "/dev/urandom"
+      # ];
     };
     gc.automatic = false;
   };

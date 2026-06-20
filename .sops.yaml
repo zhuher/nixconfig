@@ -17,7 +17,7 @@ creation_rules:
   - age:
     - *zhuher
     - *workbook
-- path_regex: secrets/cbbor.yaml
+- path_regex: secrets/cbbor(/.*)?
   key_groups:
   - age:
     - *zhuher

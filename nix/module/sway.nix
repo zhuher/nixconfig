@@ -8,6 +8,10 @@
   imports = [
     ./sound.nix
   ];
+  zhuk.wine.wayland = true;
+  environment.systemPackages = [
+    config.zhuk.wine.package
+  ];
   security.pam.loginLimits = [
     {
       domain = "@users";
@@ -16,6 +20,7 @@
       value = 1;
     }
   ];
+  # https://wiki.nixos.org/wiki/Extend_NixOS
   services = {
     apollo = {
       enable = true;
