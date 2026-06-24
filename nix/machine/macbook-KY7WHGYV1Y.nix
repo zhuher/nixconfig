@@ -18,6 +18,7 @@ in {
       SCCACHE_CACHE_SIZE = "100G";
     };
     systemPackages = with pkgs; [
+      crate2nix
       nodejs-slim_25
       (writeZigScript zig "hello-zig" ''
         _ = init;
