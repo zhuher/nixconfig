@@ -86,6 +86,7 @@ let external_completer = {|spans: list<string>|
         | sops
         | jj
         | rsync
+        | tmux
         => $fish_completer
         _ => $carapace_completer
     } | do $in $spans
@@ -139,7 +140,8 @@ $env.config = {
     }
   }
 }
-$env.PATH = prepath $"($env.HOME)/.npm/bin"
+$env.NPM_CONFIG_PREFIX = $"($env.HOME)/.npm"
+$env.PATH = prepath $"($env.NPM_CONFIG_PREFIX)/bin"
 
 def win2lin [
   mode: string = ""

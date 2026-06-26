@@ -1,5 +1,5 @@
 final: prev: let
-  fcp = final.lpkgs.callPackage; # [FIXME] have not found a way to override callPackage without encountering infinite recursion
+  fcp = prev.lpkgs.callPackage;
 in {
   # zig = final.zigpkgs."0_16_0";
   # zls = final.zigpkgs.zls-master;

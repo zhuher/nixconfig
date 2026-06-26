@@ -1,12 +1,8 @@
-{
-  lib,
-  currentSystemUser,
-  ...
-}: {
+{currentSystemUser, ...}: {
   users.groups.media = {};
   users.users.${currentSystemUser}.extraGroups = ["media"];
   users.users.navidrome.extraGroups = ["media"];
-  users.users.lidarr.extraGroups = ["media"];
+  # users.users.lidarr.extraGroups = ["media"];
 
   services.navidrome = {
     enable = true;
@@ -21,10 +17,10 @@
       ImageCacheSize = "100MB";
     };
   };
-  services.lidarr = {
-    enable = true;
-    openFirewall = true;
-  };
+  # services.lidarr = { # a worse UX than lidarr sadly...!
+  #   enable = true;
+  #   openFirewall = true;
+  # };
 
   services.prowlarr = {
     enable = true;

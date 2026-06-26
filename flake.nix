@@ -1,6 +1,8 @@
 {
   description = "LMAO TOP TEXT";
   inputs = {
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+    # nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
     freenet = {
       url = "github:freenet/freenet-core/v0.2.61";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -94,7 +96,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = {nixpkgs, ...} @ inputs: let
+  outputs = {
+    self,
+    nixpkgs,
+    ...
+  } @ inputs: let
+    rawConfigRoot = builtins.readFile inputs.flake-path.outPath;
+    configRoot =
+      if rawConfigRoot == ""
+      then builtins.toString self.outPath
+      else nixpkgs.lib.removeSuffix "\n" rawConfigRoot;
     overlays = [
       (final: _prev: {
         zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.twilight-unwrapped;
@@ -136,7 +147,17 @@
     in
       systemFunc rec {
         inherit system;
-        specialArgs = {inherit inputs isDarwin;};
+        specialArgs = {
+          inherit
+            configRoot
+            inputs
+            isDarwin
+            isWSL
+            ;
+          currentSystem = system;
+          currentSystemUser = user;
+          currentSystemName = name;
+        };
         modules =
           [
             ./nix/os/shared.nix
@@ -144,15 +165,6 @@
             ./nix/home/shared.nix
             ./nix/home/${name}.nix
             inputs.xsb.nixosModules.default
-            {
-              config._module.args = {
-                currentSystem = system;
-                currentSystemUser = user;
-                currentSystemName = name;
-                inherit isWSL;
-                inherit inputs;
-              };
-            }
             {
               nixpkgs = {
                 config.allowUnfree = true;

@@ -3,17 +3,19 @@
   currentSystemUser,
   ...
 }: {
-  environment.systemPackages = with pkgs; [pwvucontrol];
+  environment.systemPackages = with pkgs; [pwvucontrol_git];
   hardware.firmware = with pkgs; [sof-firmware];
   services = {
     pulseaudio.enable = false; # Realtime scheduling for pipewire and pulseaudio
     pipewire = {
       enable = true;
+      # package = pkgs.pkgsx86_64_v3.pipewire; # approx. twelve years to compile
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
       wireplumber = {
         enable = true;
+        # package = pkgs.pkgsx86_64_v3.wireplumber; # approx. twelve years to compile
         extraConfig = {
           "51-default-sink" = {
             "monitor.alsa.rules" = [
@@ -49,6 +51,5 @@
     };
   };
   security.rtkit.enable = true;
-
   users.users.${currentSystemUser}.extraGroups = ["pipewire" "audio"];
 }

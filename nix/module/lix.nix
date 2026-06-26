@@ -4,18 +4,19 @@
   ...
 }: {
   nixpkgs.overlays = [
-    (final: _prev: {
+    (final: prev: {
       inherit
-        (final.lixPackageSets.git)
+        (prev.lixPackageSets.${config.zhuk.lixVer})
         nix-eval-jobs
         nix-fast-build
         nixpkgs-review
-        # nil callPackage
+        lix
+        # nil
+        # callPackage
         ;
       lpkgs =
         final.lixPackageSets.${config.zhuk.lixVer};
     })
   ];
-  programs.direnv.nix-direnv.package = pkgs.lpkgs.nix-direnv;
-  nix.package = pkgs.lpkgs.lix;
+  nix.package = pkgs.lix;
 }

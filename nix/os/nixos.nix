@@ -27,7 +27,7 @@ in {
     enableAllTerminfo = true;
     localBinInPath = true;
     variables = {
-      XDG_RUNTIME_DUR = "/var/run/user/${builtins.toString config.users.users.${currentSystemUser}.uid}";
+      # XDG_RUNTIME_DIR = "/run/user/${builtins.toString config.users.users.${currentSystemUser}.uid}";
     };
   };
   documentation = {

@@ -17,8 +17,8 @@
   in {
     enable = true;
     xdg.config.files = {
-      "nushell/autoload/mutable.nu".source = "${env.NH_FLAKE}/configs/nu/mutable.nu";
-      "nushell/autoload/deosb.nu".source = "${env.NH_FLAKE}/configs/nu/deosb.nu";
+      "nushell/autoload/mutable.nu".source = "${config.zhuk.configRoot}/configs/nu/mutable.nu";
+      "nushell/autoload/deosb.nu".source = "${config.zhuk.configRoot}/configs/nu/deosb.nu";
       "nushell/env.nu".text = ''
         const zhukcfg = $nu.default-config-dir
         # # just
@@ -74,10 +74,10 @@
           $env.PATH = do (env-conversions).path.from_string $env.PATH
         }]
       '';
-      "ghostty/config".source = "${env.NH_FLAKE}/configs/ghostty";
-      "sway/config".source = "${env.NH_FLAKE}/configs/sway";
-      "emacs/init.el".source = "${env.NH_FLAKE}/configs/emacs/init.el";
-      "emacs/early-init.el".source = "${env.NH_FLAKE}/configs/emacs/early-init.el";
+      "ghostty/config".source = "${config.zhuk.configRoot}/configs/ghostty";
+      "sway/config".source = "${config.zhuk.configRoot}/configs/sway";
+      "emacs/init.el".source = "${config.zhuk.configRoot}/configs/emacs/init.el";
+      "emacs/early-init.el".source = "${config.zhuk.configRoot}/configs/emacs/early-init.el";
       "git/ignore".text = ''
         .DS_Store
       '';

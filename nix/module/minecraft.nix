@@ -1,6 +1,5 @@
 {
   pkgs,
-  currentSystemUser,
   ...
 }: {
   # https://wiki.nixos.org/wiki/Prism_Launcher
@@ -17,11 +16,4 @@
       ];
     })
   ];
-  # https://wiki.nixos.org/wiki/GameMode
-  programs.gamemode = {
-    enable = true;
-    settings.general.inhibit_screensaver = 0;
-  };
-  users.users.${currentSystemUser}.extraGroups = ["gamemode"];
-  boot.kernelParams = ["transparent_hugepage=madvise"];
 }

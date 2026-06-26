@@ -8,15 +8,42 @@
 }: let
   env = config.environment.variables;
 in {
+  nix.settings = {
+    system-features = [
+      "system-features"
+      "benchmark"
+      "big-parallel"
+      "kvm"
+      "nixos-test"
+      "gccarch-znver2"
+      "gccarch-x86-64-v3"
+    ];
+    max-jobs = 4;
+    cores = lib.mkForce 16;
+  };
   imports = [
     inputs.disko.nixosModules.default
     inputs.apollo.nixosModules.default
+    inputs.chaotic.nixosModules.default
     ./celebrimbor/disko.nix
-    ../module/steam.nix
+    ../module/games.nix
     ../module/specialisation.nix
     ../module/minecraft.nix
     ../module/navidrome.nix
   ];
+  nixpkgs = {
+    localSystem = {
+      # gcc.arch = "x86-64-v3";
+      # gcc.tune = "znver2";
+      # gcc.abi = "64";
+      system = "x86_64-linux";
+    };
+
+    overlays = [
+      # inputs.nix-cachyos-kernel.overlays.default
+      # (final: prev: {pkgs = prev.pkgsx86_64_v3;})
+    ];
+  };
   sops.defaultSopsFile = ../../secrets/cbbor.yaml;
   environment.systemPackages = with pkgs; [
     efibootmgr
@@ -51,11 +78,6 @@ in {
         extraConfig = ''
           timeout: 5
         '';
-        extraEntries = ''
-          /Windows
-              protocol: efi
-              path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
-        '';
       };
       grub = {
         enable = false;
@@ -78,7 +100,25 @@ in {
       "ahci.mobile_lpm_policy=1" # no power management for SATA: LPM support broken, forcing max_power
     ];
 
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages_cachyos-lto;
+    # kernelPackages = let
+    #   kernel = pkgs.cachyosKernels.linux-cachyos-latest.override {
+    #     # Customize CachyOS settings
+    #     cpusched = "bore";
+    #     lto = "full";
+    #     processorOpt = "x86_64-v3";
+    #     hzTicks = "1000";
+    #     bbr3 = true;
+    #     hugepage = "always";
+    #     rt = true;
+    #   };
+    # in let
+    #   # helpers.nix provides a few utilities for building kernel with LTO.
+    #   # I haven't figured out a clean way to expose it in flakes.
+    #   helpers = pkgs.callPackage "${inputs.nix-cachyos-kernel.outPath}/helpers.nix" {};
+    # in
+    #   helpers.kernelModuleLLVMOverride (pkgs.linuxKernel.packagesFor kernel);
+    # kernelPackages = pkgs.linuxPackages_latest;
     initrd = {
       enable = true;
       availableKernelModules = ["r8169"];
@@ -109,6 +149,7 @@ in {
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   };
   services = {
+    scx.enable = true;
     syncthing = {
       dataDir = "${env.HOME}/Sync";
       user = currentSystemUser;
@@ -118,24 +159,39 @@ in {
     fstrim.enable = true;
     btrfs.autoScrub = {
       enable = true;
-      interval = "weekly";
+      interval = "daily";
       fileSystems = ["/"];
     };
+    mullvad-vpn = {
+      enable = true;
+      package = pkgs.mullvad-vpn;
+    };
   };
-  services.mullvad-vpn = {
-    enable = true;
-    package = pkgs.mullvad-vpn;
+  systemd.services.btrfs-rebalance = {
+    description = "Btrfs filesystem rebalancing";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=90 /";
+    };
+  };
+  systemd.timers.btrfs-rebalance = {
+    description = "Nightly Btrfs rebalancing";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "*-*-* 03:00:00"; # Every day at 3 AM
+      OnBootSec = "1h";
+      Persistent = true;
+    };
   };
 
-  zhuk.git.secrets = false;
-  zhuk.jj.secrets = false;
+  zhuk.git.secrets = true;
+  zhuk.jj.secrets = true;
   networking.nameservers = [
     "9.9.9.11"
     "149.112.112.11"
     "2620:fe::11"
     "2620:fe::fe:11"
   ];
-
   sops.secrets = {
     "sunshine-cakey" = {
       sopsFile = ../../secrets/cbbor/sunchine.cakey.pem;

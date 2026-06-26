@@ -4,13 +4,15 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  # sway = pkgs.sway;
+  sway = pkgs.sway_git;
+in {
   imports = [
     ./sound.nix
   ];
-  zhuk.wine.wayland = true;
+  # zhuk.wine.wayland = true;
   environment.systemPackages = [
-    config.zhuk.wine.package
   ];
   security.pam.loginLimits = [
     {
@@ -92,6 +94,7 @@
   };
   programs.sway = {
     enable = true;
+    package = pkgs.sway;
     extraPackages = with pkgs; [
       tofi
       rofi-power-menu

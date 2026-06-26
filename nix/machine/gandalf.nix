@@ -9,6 +9,7 @@
 in {
   sops.defaultSopsFile = ../../secrets/gandalf.yaml;
   environment.systemPackages = with pkgs; [
+    codex
     freenet
     zhuk.monero-cli
     zhuk.thorium-browser

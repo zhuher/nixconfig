@@ -185,7 +185,6 @@ in {
       isDarwin
       {uv = "diskutil ap unlockVolume";};
     variables = let
-      flake-path = builtins.readFile inputs.flake-path.outPath;
       nvimexe = getExe' config.zhuk.nvim.package "nvim";
     in rec {
       NIXPKGS_REV = "e75f25705c2934955ee5075e62530d74aca973c6";
@@ -198,7 +197,7 @@ in {
       XDG_CONFIG_HOME = "${HOME}/.config";
       XDG_DATA_HOME = "${HOME}/.local/share";
       XDG_STATE_HOME = "${HOME}/.local/state";
-      NH_FLAKE = builtins.trace "Flake path is ${flake-path}" flake-path;
+      NH_FLAKE = builtins.trace "Config root is ${config.zhuk.configRoot}" config.zhuk.configRoot;
       ZDOTDIR = "${XDG_CONFIG_HOME}/zsh";
     };
   };

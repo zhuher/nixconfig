@@ -18,8 +18,8 @@ in {
       SCCACHE_CACHE_SIZE = "100G";
     };
     systemPackages = with pkgs; [
+      nodejs-slim_25.npm
       crate2nix
-      nodejs-slim_25
       (writeZigScript zig "hello-zig" ''
         _ = init;
         std.debug.print("hello from a nix package!", .{});

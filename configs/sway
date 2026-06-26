@@ -81,7 +81,7 @@ exec swaymsg create_output HEADLESS-1
     bindsym $mod+Return exec $term
 
     # Kill focused window
-    bindsym $mod+Shift+q kill
+    bindsym $mod+Shift+w kill
 
     # Start your launcher
     bindsym $mod+d exec $menu
