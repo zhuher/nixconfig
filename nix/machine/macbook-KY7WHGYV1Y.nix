@@ -19,6 +19,7 @@ in {
     };
     systemPackages = with pkgs; [
       nodejs-slim_25.npm
+      nodejs-slim_25
       crate2nix
       (writeZigScript zig "hello-zig" ''
         _ = init;
