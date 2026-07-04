@@ -51,8 +51,6 @@
           ${getExe pkgs.carapace} _carapace nushell | save --force $"($zhukcfg)/autoload/carapace.nu"
         }
         # source $"($zhukcfg)/just.nu"
-        mkdir ($nu.data-dir | path join "vendor/autoload")
-        ${getExe pkgs.television} init nu | save -f ($nu.data-dir | path join "vendor/autoload/tv.nu")
         source $"($zhukcfg)/zoxide.nu"
         # https://github.com/bydmiller/nixos-configs/blob/6a7053f1e081c21cf4362724b57d3d70e63198ed/machines/nebula/homes/zsh/aliases.nix#L63-L64
         alias canihazip = ${dig} @resolver4.opendns.com myip.opendns.com +short

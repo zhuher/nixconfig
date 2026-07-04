@@ -18,21 +18,11 @@ in {
     prismlauncher
     appcleaner
   ];
-  nix.settings = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-  };
   homebrew = {
     casks = [
-      # gandalf-specific casks (common ones in os/darwin.nix)
       "ayugram"
     ];
     masApps = {
-      # gandalf-specific apps (common ones in os/darwin.nix)
       "Pages" = 409201541;
       "Numbers" = 409203825;
     };

@@ -6,16 +6,20 @@
   nixpkgs.overlays = [
     (final: prev: {
       inherit
-        (prev.lixPackageSets.${config.zhuk.lixVer})
+        (final.lpkgs)
         nix-eval-jobs
         nix-fast-build
         nixpkgs-review
-        lix
         # nil
         # callPackage
         ;
+      lix = final.lpkgs.lix.overrideAttrs (old: {
+        patches =
+          old.patches
+          ++ [];
+      });
       lpkgs =
-        final.lixPackageSets.${config.zhuk.lixVer};
+        prev.lixPackageSets.${config.zhuk.lixVer};
     })
   ];
   nix.package = pkgs.lix;

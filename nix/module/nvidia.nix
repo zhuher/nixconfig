@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   pkgs,
   lib,
@@ -15,6 +16,14 @@ lib.mkIf config.zhuk.nvidia {
     ];
   };
   boot.blacklistedKernelModules = ["ucsi_ccg" "i2c_nvidia_gpu"]; # my RTX 2060 Super doesn't have Type-C
+  nixpkgs.overlays = [
+    (final: prev: {
+      nvidia_cachyos_custom = prev.callPackage "${inputs.chaotic}/pkgs/nvidia-cachyos" {
+        inherit final;
+        linuxPackages_cachyos = config.boot.kernelPackages;
+      };
+    })
+  ];
   hardware = {
     graphics = {
       enable = true;
@@ -24,17 +33,13 @@ lib.mkIf config.zhuk.nvidia {
       modesetting.enable = true;
       open = false;
       nvidiaSettings = true;
-      # package = pkgs.nvidia_cachyos-lto;
-      package = config.boot.kernelPackages.nvidiaPackages.latest;
+      package = pkgs.nvidia_cachyos_custom;
     };
   };
   services = {
     xserver.videoDrivers = ["modesetting" "nvidia"];
   };
   environment.systemPackages = with pkgs; [
-    # vulkanPackages_latest.vulkan-headers
-    # vulkanPackages_latest.vulkan-loader
     low-latency-layer
-    # libGL
   ];
 }

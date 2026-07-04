@@ -40,7 +40,7 @@ in {
     };
 
     overlays = [
-      # inputs.nix-cachyos-kernel.overlays.default
+      inputs.nix-cachyos-kernel.overlays.default
       # (final: prev: {pkgs = prev.pkgsx86_64_v3;})
     ];
   };
@@ -100,25 +100,27 @@ in {
       "ahci.mobile_lpm_policy=1" # no power management for SATA: LPM support broken, forcing max_power
     ];
 
-    kernelPackages = pkgs.linuxPackages_cachyos-lto;
-    # kernelPackages = let
-    #   kernel = pkgs.cachyosKernels.linux-cachyos-latest.override {
-    #     # Customize CachyOS settings
-    #     cpusched = "bore";
-    #     lto = "full";
-    #     processorOpt = "x86_64-v3";
-    #     hzTicks = "1000";
-    #     bbr3 = true;
-    #     hugepage = "always";
-    #     rt = true;
-    #   };
-    # in let
-    #   # helpers.nix provides a few utilities for building kernel with LTO.
-    #   # I haven't figured out a clean way to expose it in flakes.
-    #   helpers = pkgs.callPackage "${inputs.nix-cachyos-kernel.outPath}/helpers.nix" {};
-    # in
-    #   helpers.kernelModuleLLVMOverride (pkgs.linuxKernel.packagesFor kernel);
-    # kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages =
+      pkgs.linuxKernel.packagesFor (pkgs
+    .cachyosKernels.linux-cachyos-latest.override {
+          configVariant = "linux-cachyos-bore";
+          lto = "full";
+          processorOpt = "native";
+          autofdo = false;
+          cpusched = "bore";
+          kcfi = false;
+          hzTicks = "1000";
+          performanceGovernor = true;
+          tickrate = "full";
+          preemptType = "full";
+          ccHarder = true;
+          bbr3 = true;
+          hugepage = "madvise";
+          hardened = false;
+          rt = false;
+          acpiCall = false;
+          handheld = false;
+        });
     initrd = {
       enable = true;
       availableKernelModules = ["r8169"];
@@ -149,7 +151,7 @@ in {
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   };
   services = {
-    scx.enable = true;
+    # scx.enable = true;
     syncthing = {
       dataDir = "${env.HOME}/Sync";
       user = currentSystemUser;

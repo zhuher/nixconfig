@@ -2,7 +2,7 @@
   description = "LMAO TOP TEXT";
   inputs = {
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-    # nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
     freenet = {
       url = "github:freenet/freenet-core/v0.2.61";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,7 +25,6 @@
       # Build a custom WSL installer
       url = "github:nix-community/NixOS-WSL"; # "/bc827c2924c46f2344d3168fd82c6711aaceb610"; # next commit broke mount root regex check
       inputs.nixpkgs.follows = "nixpkgs";
-      # inputs.flake-compat.follows = "nvf/flake-compat";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -40,10 +39,6 @@
       inputs.nix-darwin.follows = "nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # nvf = {
-    #   url = "github:NotAShelf/nvf";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
@@ -77,7 +72,6 @@
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
-      # inputs.flake-parts.follows = "nvf/flake-parts";
     };
     # zig-overlay = {
     #   url = "github:bandithedoge/zig-overlay";
@@ -95,6 +89,10 @@
       url = "github:zhuher/xStarbound/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    televizor = {
+      url = "github:lalvarezt/television/prefix-config-expose";
+      inputs.flake-parts.follows = "neovim-nightly-overlay/flake-parts";
+    };
   };
   outputs = {
     self,
@@ -109,6 +107,7 @@
     overlays = [
       (final: _prev: {
         zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.twilight-unwrapped;
+        television = inputs.televizor.packages.${final.stdenv.hostPlatform.system}.default;
       })
       inputs.apollo.overlays.default
       inputs.emacs-overlay.overlays.default
@@ -220,11 +219,6 @@
         system = "x86_64-linux";
         user = "zhuher";
       };
-      # wsl = mkSystem "wsl" {
-      #   system = "x86_64-linux";
-      #   user = "zhuher";
-      #   isWSL = true;
-      # };
     };
     darwinConfigurations = {
       macbook-KY7WHGYV1Y = mkSystem "macbook-KY7WHGYV1Y" {

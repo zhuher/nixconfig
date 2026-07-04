@@ -75,11 +75,15 @@ in {
     package = lib.mkDefault pkgs.lix;
     checkConfig = true;
     settings = {
+      accept-flake-config = false;
       auto-optimise-store = false;
       cores = 0;
       sandbox = lib.mkDefault true; # [INFO]: "relaxed" or bool;
-      extra-trusted-public-keys = [
-        "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
+      substituters = lib.mkForce [
+        "https://cache.nixos.org"
+      ];
+      trusted-public-keys = lib.mkForce [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
       trusted-users = [
         "@admin"
