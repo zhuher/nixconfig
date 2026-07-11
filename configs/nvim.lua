@@ -476,6 +476,7 @@ local rustaceanvim = {
             cargo = { features = 'all' },
             check = {
               command = 'clippy',
+              extraArgs = { "--", "-W", "clippy::pedantic" },
             },
           },
         },
